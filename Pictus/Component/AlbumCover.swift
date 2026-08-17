@@ -8,6 +8,7 @@
 import SwiftUI
 struct AlbumCover:View {
     @State var albumName : String
+    
     var body: some View {
         Image("Image")
             .resizable()

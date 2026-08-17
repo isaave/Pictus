@@ -13,6 +13,13 @@ struct BtnAdd:View{
             ButtonAction()
         }label: {
             Image(systemName: "plus")
+            
         }
     }
+}
+
+#Preview {
+    BtnAdd(ButtonAction: {
+        print("Add")
+    })
 }
