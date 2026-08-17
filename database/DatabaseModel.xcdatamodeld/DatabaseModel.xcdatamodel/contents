@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24902" systemVersion="25G76" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+    <entity name="AlbumEntity" representedClassName="AlbumEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="imgAlbun" optional="YES" attributeType="Binary"/>
+        <attribute name="nameAlbun" optional="YES" attributeType="String"/>
+        <relationship name="obras" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ObraEntity"/>
+    </entity>
+    <entity name="AutorEntity" representedClassName="AutorEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="name" optional="YES" attributeType="String"/>
+        <relationship name="obras" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ObraEntity" inverseName="autor" inverseEntity="ObraEntity"/>
+    </entity>
+    <entity name="ObraEntity" representedClassName="ObraEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="ctxLibetado" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="ctxObra" optional="YES" attributeType="String"/>
+        <attribute name="dateObra" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="imgObra" optional="YES" attributeType="Binary"/>
+        <attribute name="nameObra" optional="YES" attributeType="String"/>
+        <attribute name="origen" optional="YES" attributeType="String"/>
+        <relationship name="albuns" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="AlbumEntity"/>
+        <relationship name="autor" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AutorEntity" inverseName="obras" inverseEntity="AutorEntity"/>
+        <relationship name="reflexoes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ReflexaoEntity" inverseName="obra" inverseEntity="ReflexaoEntity"/>
+    </entity>
+    <entity name="ReflexaoEntity" representedClassName="ReflexaoEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="dateReflx" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="textReflx" optional="YES" attributeType="String"/>
+        <relationship name="obra" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="ObraEntity" inverseName="reflexoes" inverseEntity="ObraEntity"/>
+    </entity>
+</model>
