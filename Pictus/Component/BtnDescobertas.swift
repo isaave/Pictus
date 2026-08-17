@@ -16,7 +16,7 @@ struct BtnDescobertas: View {
         } label: {
             ZStack(alignment: .topTrailing) {
                 Image(systemName: "gift.fill")
-                    .font(.system(size: 15))
+                    .font(.system(size: 20))
                     .foregroundColor(.primary)
                     .frame(width: 48, height: 48)
                     .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 55, style: .continuous))
@@ -24,7 +24,7 @@ struct BtnDescobertas: View {
                 if Descoberta {
                     Circle()
                         .fill(Color.accentColor)
-                        .frame(width: 10, height: 10)
+                        .frame(width: 15, height: 15)
                         .offset(x: 1, y: 3)
                 }
             }
