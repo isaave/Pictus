@@ -14,30 +14,44 @@ enum SegmentedClasses: String, CaseIterable {
 }
 
 struct CollectionView: View {
-    
+
     @State private var selectedMode: SegmentedClasses = .all
 
     var body: some View {
         VStack {
+
+            HStack {
+                Text("Senhas")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                    .foregroundColor(.primary)
+                Spacer()
+                BtnDescobertas()
+                    .frame(width: 48, height: 48)
+            }
+            .padding(.horizontal)
+
             ArtSegmentedControl(
                 selection: $selectedMode
             )
             .padding(.horizontal)
-            
+
             switch selectedMode {
             case .all:
-                HStack{
+                HStack {
                     Text("Exibindo: Todos")
                 }
             case .discoveries:
-                HStack{
+                HStack {
                     Text("Exibindo: Descobertas")
                 }
             case .personal:
-                HStack{
+                HStack {
                     Text("Exibindo Minhas")
                 }
             }
+
+            Spacer()
         }
     }
 }
