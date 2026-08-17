@@ -14,7 +14,7 @@ struct textedatabase: View {
     var body: some View {
         Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
         Button {
-            vm.addator(name: "test")
+            vm.addAtor(name: "test")
         }label: {
             Text("Save")
         }

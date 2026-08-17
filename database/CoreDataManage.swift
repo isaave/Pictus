@@ -30,7 +30,7 @@ class CoreDataManage {
         do {
             try context.save()
             print("save core data")
-        } catch var error{
+        } catch let error{
             print("error saving core data: \(error.localizedDescription)")
         }
     }
