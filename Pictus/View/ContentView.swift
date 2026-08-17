@@ -9,18 +9,13 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        VStack {
-            HStack {
-                Spacer()
-                BtnDescobertas()
-                    .frame(width: 48, height: 48) 
+        NavigationStack{
+            NavigationLink(destination: AlbunsView(searchText: "", )) {
+                Text("Hello, world!")
             }
-            Spacer()
         }
-        .padding()
     }
 }
-
 #Preview {
     ContentView()
 }
