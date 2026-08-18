@@ -17,7 +17,7 @@ struct AlbunsView: View {
         
             ScrollView {
                 LazyVGrid(columns: columns) {                    ForEach(filteredNames, id: \.self) { album in
-                        AlbumCover(albumName: album)
+                        AlbumCover(albumName: album,coverWidth: 175,coverHeight: 210)
                     }
                 }
             }

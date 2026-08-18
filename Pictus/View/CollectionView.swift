@@ -72,7 +72,7 @@ struct CollectionView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: -15) {
                         ForEach(albumNames, id: \.self) { name in
-                            AlbumCover(albumName: name)
+                            AlbumCover(albumName: name,coverWidth: 175,coverHeight: 210)
                         }
                     }
                     .padding(.horizontal)
