@@ -16,15 +16,27 @@ class CoreDataRelationshipViewModel: ObservableObject {
     let manager = CoreDataManage.instance
         
     func addObra(name: String, nameAutor: String?, autor: AutorEntity?, dataCriacao: Date, descricao: String, img: Data, origen: String ){
-        let newObra = ObraEntity(context: manager.context)
         
-  
+        guard !name.trimmingCharacters(in: .whitespaces).isEmpty else {
+               print("Erro: nome da obra está vazio")
+               return
+           }
+
+        
+           guard let nameAutor, !nameAutor.trimmingCharacters(in: .whitespaces).isEmpty else {
+               print("Erro: nome do autor está vazio ou nil")
+               return
+           }
+
+       
+        
+        let newObra = ObraEntity(context: manager.context)
+        newObra.ctxObra = descricao.trimmingCharacters(in: .whitespaces).isEmpty ? nil : descricao
         
         newObra.id = UUID()
         newObra.nameObra = name
         newObra.autor = autor
         newObra.dateObra = dataCriacao
-        newObra.ctxObra = descricao
         newObra.imgObra = img
         newObra.origen = origen
         newObra.ctxLibetado = false
@@ -59,3 +71,4 @@ class CoreDataRelationshipViewModel: ObservableObject {
     }
     
 }
+
