@@ -1,5 +1,5 @@
 //
-//  ConfirmationAlert.swift
+//  ReflectionTimeCard.swift
 //  Pictus
 //
 //  Created by Pedro Henrique Hossaka Teruel on 18/08/26.
@@ -7,70 +7,26 @@
 
 import SwiftUI
 
-struct ConfirmationAlert: View {
-    let title: String
-    let message: String
-    let question: String
-    let confirmTitle: String
-    let cancelTitle: String
-
-    let onConfirm: () -> Void
-    let onCancel: () -> Void
-
-    @Environment(\.accessibilityReduceMotion)
-    private var reduceMotion
-
-    @AccessibilityFocusState
-    private var isTitleFocused: Bool
-
+struct ReflectionTimeCard: View {
     var body: some View {
-        ZStack {
-            Color.black.opacity(0.30)
-                .ignoresSafeArea()
-                .onTapGesture {
-                    onCancel()
-                }
-
-            content
-                .padding()
-        }
-        .transition(
-            reduceMotion
-                ? .opacity
-                : .opacity.combined(with: .scale(scale: 0.96))
-        )
-        .onAppear {
-            isTitleFocused = true
-        }
-    }
-
-    private var content: some View {
         VStack(alignment: .leading, spacing: 12) {
             VStack(alignment: .leading) {
-                Text(title)
+                Text("Hora de refletir")
                     .font(.headline)
                     .fontWeight(.semibold)
-                    .accessibilityFocused(
-                        $isTitleFocused
-                    )
                     .padding(.bottom, 8)
-                Text(message)
+                Text("Quero Ajuda")
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .padding(.bottom, 2)
-                Text(question)
-                    .font(.subheadline)
-                    .foregroundStyle(.primary)
-                    .fontWeight(Font.Weight.semibold)
-                    .padding(.bottom, 16)
             }
 
             VStack(spacing: 12) {
                 Button(action: {
-                    onConfirm()
+                    
                 }) {
                     HStack{
-                        Text(confirmTitle)
+                        Text("Ola")
                             .font(.headline)
                     }
                     .frame(maxWidth: .infinity)
@@ -80,10 +36,9 @@ struct ConfirmationAlert: View {
                 .tint(.accentColor)
 
                 Button(action: {
-                    onCancel()
                 }) {
                     HStack{
-                        Text(cancelTitle)
+                        Text("Ola")
                             .font(.headline)
                     }
                     .frame(maxWidth: .infinity)
@@ -117,16 +72,6 @@ struct ConfirmationAlert: View {
 }
 
 
-//======== Quando forem puxar o alerta, chequem no figma os textos ;)=========
 #Preview {
-    ConfirmationAlert(
-        title: "Atenção!",
-        message: "Acessar o contexto desta obra sem análise prévia pode impactar sua interpretação.",
-        question: "Deseja prosseguir?",
-        confirmTitle: "Sim",
-        cancelTitle: "Não",
-        onConfirm: {},
-        onCancel: {}
-    )
+    ReflectionTimeCard()
 }
-
