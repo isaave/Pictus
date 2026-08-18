@@ -10,6 +10,7 @@ import SwiftUI
 struct ConfirmationAlert: View {
     let title: String
     let message: String
+    let question: String
     let confirmTitle: String
     let cancelTitle: String
 
@@ -24,7 +25,7 @@ struct ConfirmationAlert: View {
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.35)
+            Color.black.opacity(0.30)
                 .ignoresSafeArea()
                 .onTapGesture {
                     onCancel()
@@ -52,26 +53,58 @@ struct ConfirmationAlert: View {
                     .accessibilityFocused(
                         $isTitleFocused
                     )
-
                 Text(message)
                     .font(.body)
                     .foregroundStyle(.secondary)
+                Text(question)
+                    .font(.body)
+                    .foregroundStyle(.primary)
+                    .fontWeight(Font.Weight.semibold)
+                    
             }
 
             VStack(spacing: 12) {
-                Button(confirmTitle) {
+                Button(action: {
                     onConfirm()
-                }
-                .buttonStyle(.borderedProminent)
-                .controlSize(.large)
-                .frame(maxWidth: .infinity)
+                }) {
+                    HStack{
+                        Text(confirmTitle)
+                            .font(.headline)
+                            .foregroundColor(.white)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .background {
+                        Capsule()
+                            .fill(Color(.accent))
+                    }
 
-                Button(cancelTitle) {
-                    onCancel()
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.large)
-                .frame(maxWidth: .infinity)
+                //.buttonStyle(.borderedProminent)
+                .tint(.accentColor)
+                
+                
+                //IMport pod
+                
+                Button(action: {
+                    onCancel()
+                }) {
+                    HStack{
+                        Text(cancelTitle)
+                            .font(.headline)
+                            .foregroundColor(.primary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .frame(height: 44)
+                    .background {
+                        Capsule()
+                            .fill(Color(.systemGray3))
+                    }
+
+                }
+                //.buttonStyle(.borderedProminent)
+                //.tint(Color(.systemGray3))
+
             }
         }
         .padding(24)
@@ -97,6 +130,7 @@ struct ConfirmationAlert: View {
     ConfirmationAlert(
         title: "Atenção",
         message: "Acessar o contexto desta obra sem análise prévia pode impactar sua interpretação.",
+        question: "Deseja continuar?",
         confirmTitle: "Sim",
         cancelTitle: "Não",
         onConfirm: {},
