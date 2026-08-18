@@ -17,7 +17,7 @@ struct AlbunsView: View {
         
             ScrollView {
                 LazyVGrid(columns: columns) {                    ForEach(filteredNames, id: \.self) { album in
-                        AlbumCover(albumName: album)
+                        AlbumCover(albumName: album,coverWidth: 175,coverHeight: 210)
                     }
                 }
             }
@@ -25,11 +25,9 @@ struct AlbunsView: View {
             .searchable(text: $searchText, prompt: "Buscar álbuns")
             .toolbar{
                 ToolbarItem(placement:.topBarTrailing){
-                    Button{
-                        print("teste")
-                    }label: {
-                      Image(systemName: "plus")
-                    }
+                    BtnAdd(ButtonAction: {
+                        print("Add")
+                    })
                 }
             }
     }

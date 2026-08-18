@@ -8,11 +8,14 @@
 import SwiftUI
 struct AlbumCover:View {
     @State var albumName : String
+    var coverWidth: CGFloat
+    var coverHeight: CGFloat
+    
     var body: some View {
         Image("Image")
             .resizable()
             .scaledToFill()
-            .frame(width: 175,height: 210)
+            .frame(width: coverWidth,height: coverHeight)
             .cornerRadius(10)
             .padding()
             .overlay(
@@ -44,5 +47,5 @@ struct AlbumCover:View {
     }
 }
 #Preview {
-    AlbumCover(albumName: "Grafite")
+    AlbumCover(albumName: "Grafite",coverWidth: 175,coverHeight: 210)
 }
