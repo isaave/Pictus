@@ -18,7 +18,7 @@
 		BA8F525330337C3C00FCCE30 /* CoreDataRelationshipViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataRelationshipViewModel.swift; sourceTree = "<group>"; };
 		BA8F525630337C8700FCCE30 /* DatabaseModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DatabaseModel.xcdatamodel; sourceTree = "<group>"; };
 		BA8F52583033808D00FCCE30 /* textedatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = textedatabase.swift; sourceTree = "<group>"; };
-		F3FCECEC302F97DA004E4273 /* Pictus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pictus.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F3FCECEC302F97DA004E4273 /* Pictus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = Pictus.app; path = "/Users/monge/developer/academy/Pictus/build/Debug-iphoneos/Pictus.app"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -55,17 +55,8 @@
 			isa = PBXGroup;
 			children = (
 				F3FCECEE302F97DA004E4273 /* Pictus */,
-				F3FCECED302F97DA004E4273 /* Products */,
 				BA8F525030337B9200FCCE30 /* database */,
 			);
-			sourceTree = "<group>";
-		};
-		F3FCECED302F97DA004E4273 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				F3FCECEC302F97DA004E4273 /* Pictus.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -118,7 +109,7 @@
 			mainGroup = F3FCECE3302F97DA004E4273;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = F3FCECED302F97DA004E4273 /* Products */;
+			productRefGroup = F3FCECE3302F97DA004E4273;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
