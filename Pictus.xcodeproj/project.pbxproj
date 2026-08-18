@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		BA8F525230337C0900FCCE30 /* CoreDataManage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA8F525130337C0900FCCE30 /* CoreDataManage.swift */; };
+		BA8F525430337C4500FCCE30 /* CoreDataRelationshipViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA8F525330337C3C00FCCE30 /* CoreDataRelationshipViewModel.swift */; };
+		BA8F525730337C8700FCCE30 /* DatabaseModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BA8F525530337C8700FCCE30 /* DatabaseModel.xcdatamodeld */; };
+		BA8F52593033808D00FCCE30 /* textedatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA8F52583033808D00FCCE30 /* textedatabase.swift */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
-		F3FCECEC302F97DA004E4273 /* Pictus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pictus.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BA8F525130337C0900FCCE30 /* CoreDataManage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataManage.swift; sourceTree = "<group>"; };
+		BA8F525330337C3C00FCCE30 /* CoreDataRelationshipViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataRelationshipViewModel.swift; sourceTree = "<group>"; };
+		BA8F525630337C8700FCCE30 /* DatabaseModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DatabaseModel.xcdatamodel; sourceTree = "<group>"; };
+		BA8F52583033808D00FCCE30 /* textedatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = textedatabase.swift; sourceTree = "<group>"; };
+		F3FCECEC302F97DA004E4273 /* Pictus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = Pictus.app; path = "/Users/monge/developer/academy/Pictus/build/Debug-iphoneos/Pictus.app"; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -29,20 +40,23 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		BA8F525030337B9200FCCE30 /* database */ = {
+			isa = PBXGroup;
+			children = (
+				BA8F525330337C3C00FCCE30 /* CoreDataRelationshipViewModel.swift */,
+				BA8F525130337C0900FCCE30 /* CoreDataManage.swift */,
+				BA8F525530337C8700FCCE30 /* DatabaseModel.xcdatamodeld */,
+				BA8F52583033808D00FCCE30 /* textedatabase.swift */,
+			);
+			path = database;
+			sourceTree = "<group>";
+		};
 		F3FCECE3302F97DA004E4273 = {
 			isa = PBXGroup;
 			children = (
 				F3FCECEE302F97DA004E4273 /* Pictus */,
-				F3FCECED302F97DA004E4273 /* Products */,
+				BA8F525030337B9200FCCE30 /* database */,
 			);
-			sourceTree = "<group>";
-		};
-		F3FCECED302F97DA004E4273 /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				F3FCECEC302F97DA004E4273 /* Pictus.app */,
-			);
-			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -95,7 +109,7 @@
 			mainGroup = F3FCECE3302F97DA004E4273;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = F3FCECED302F97DA004E4273 /* Products */;
+			productRefGroup = F3FCECE3302F97DA004E4273;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -119,6 +133,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA8F525230337C0900FCCE30 /* CoreDataManage.swift in Sources */,
+				BA8F525730337C8700FCCE30 /* DatabaseModel.xcdatamodeld in Sources */,
+				BA8F52593033808D00FCCE30 /* textedatabase.swift in Sources */,
+				BA8F525430337C4500FCCE30 /* CoreDataRelationshipViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -253,7 +271,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+<<<<<<< HEAD
+				DEVELOPMENT_TEAM = H35GUXPUPQ;
+=======
 				DEVELOPMENT_TEAM = K8MBL4UC88;
+>>>>>>> Teruel
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -285,7 +307,11 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
+<<<<<<< HEAD
+				DEVELOPMENT_TEAM = H35GUXPUPQ;
+=======
 				DEVELOPMENT_TEAM = K8MBL4UC88;
+>>>>>>> Teruel
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -332,6 +358,19 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCVersionGroup section */
+		BA8F525530337C8700FCCE30 /* DatabaseModel.xcdatamodeld */ = {
+			isa = XCVersionGroup;
+			children = (
+				BA8F525630337C8700FCCE30 /* DatabaseModel.xcdatamodel */,
+			);
+			currentVersion = BA8F525630337C8700FCCE30 /* DatabaseModel.xcdatamodel */;
+			path = DatabaseModel.xcdatamodeld;
+			sourceTree = "<group>";
+			versionGroupType = wrapper.xcdatamodel;
+		};
+/* End XCVersionGroup section */
 	};
 	rootObject = F3FCECE4302F97DA004E4273 /* Project object */;
 }
