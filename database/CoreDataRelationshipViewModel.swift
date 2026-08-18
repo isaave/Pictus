@@ -33,6 +33,7 @@ class CoreDataRelationshipViewModel: ObservableObject {
         let newObra = ObraEntity(context: manager.context)
         newObra.ctxObra = context.trimmingCharacters(in: .whitespaces).isEmpty ? nil : context
         
+        
         newObra.id = UUID()
         newObra.nameObra = name
         newObra.dateObra = dataCriacao
