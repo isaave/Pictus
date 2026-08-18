@@ -5,10 +5,6 @@
         <attribute name="nameAlbun" optional="YES" attributeType="String"/>
         <relationship name="obras" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ObraEntity"/>
     </entity>
-    <entity name="AutorEntity" representedClassName="AutorEntity" syncable="YES" codeGenerationType="class">
-        <attribute name="name" optional="YES" attributeType="String"/>
-        <relationship name="obras" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ObraEntity" inverseName="autor" inverseEntity="ObraEntity"/>
-    </entity>
     <entity name="ObraEntity" representedClassName="ObraEntity" syncable="YES" codeGenerationType="class">
         <attribute name="ctxLibetado" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
         <attribute name="ctxObra" optional="YES" attributeType="String"/>
@@ -19,7 +15,6 @@
         <attribute name="nameObra" optional="YES" attributeType="String"/>
         <attribute name="origen" optional="YES" attributeType="String"/>
         <relationship name="albuns" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="AlbumEntity"/>
-        <relationship name="autor" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AutorEntity" inverseName="obras" inverseEntity="AutorEntity"/>
         <relationship name="reflexoes" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="ReflexaoEntity" inverseName="obra" inverseEntity="ReflexaoEntity"/>
     </entity>
     <entity name="ReflexaoEntity" representedClassName="ReflexaoEntity" syncable="YES" codeGenerationType="class">

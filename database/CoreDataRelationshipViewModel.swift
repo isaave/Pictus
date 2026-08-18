@@ -15,7 +15,7 @@ import SwiftData
 class CoreDataRelationshipViewModel: ObservableObject {
     let manager = CoreDataManage.instance
         
-    func addObra(name: String, nameAutor: String?, autor: AutorEntity?, dataCriacao: Date, descricao: String, img: Data, origen: String ){
+    func addObra(name: String, nameAutor: String?, dataCriacao: Date, context: String, img: Data, origen: String ){
         
         guard !name.trimmingCharacters(in: .whitespaces).isEmpty else {
                print("Erro: nome da obra está vazio")
@@ -29,13 +29,12 @@ class CoreDataRelationshipViewModel: ObservableObject {
            }
 
        
-        
+        //so vai chegar aqui se nn der nenhum erro
         let newObra = ObraEntity(context: manager.context)
-        newObra.ctxObra = descricao.trimmingCharacters(in: .whitespaces).isEmpty ? nil : descricao
+        newObra.ctxObra = context.trimmingCharacters(in: .whitespaces).isEmpty ? nil : context
         
         newObra.id = UUID()
         newObra.nameObra = name
-        newObra.autor = autor
         newObra.dateObra = dataCriacao
         newObra.imgObra = img
         newObra.origen = origen
@@ -47,8 +46,13 @@ class CoreDataRelationshipViewModel: ObservableObject {
     
     
     func editDescription(uuid: UUID){
-    
-     
+        let busca: NSFetchRequest<ObraEntity> = ObraEntity.fetchRequest()
+        busca.predicate  = NSPredicate(format: "id == %@",uuid as CVarArg)
+        busca.fetchLimit = 1
+        
+        if let result = try? manager.context.fetch(busca).first {
+            result.ctxLibetado = true
+        }
     }
     
     func addReflection(rfx : String){
