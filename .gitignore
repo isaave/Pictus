@@ -1,3 +1,10 @@
+# macOS System Files (Adicionado: previne erros como o do .DS_Store)
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Icon?
 
 # Xcode
 #
@@ -17,6 +24,7 @@ DerivedData/
 *.perspectivev3
 !default.perspectivev3
 xcuserdata/
+*.xcuserstate
 
 ## Other
 *.moved-aside
