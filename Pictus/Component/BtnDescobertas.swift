@@ -5,7 +5,7 @@ struct BtnDescobertas: View {
     @State private var descoberta: Bool = true
 
     var body: some View {
-        
+        NavigationLink(destination: WorkOfDay(), label: {
             ZStack(alignment: .topTrailing) {
                 Image(systemName: "gift.fill")
                     .font(.system(size: 20))
@@ -22,8 +22,8 @@ struct BtnDescobertas: View {
             }
             .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 5)
             .buttonStyle(.plain)
+        })
         }
-       
     }
 
 

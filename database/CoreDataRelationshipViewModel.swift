@@ -22,7 +22,7 @@ class CoreDataRelationshipViewModel: ObservableObject {
         fetchObras()
     }
     
-    private func seedObrasIfNeeded() {
+     func seedObrasIfNeeded() {
         if !hasObras() {
             let objetosIniciais = ObrasObjects().objects
             for obra in objetosIniciais {
