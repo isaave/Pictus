@@ -27,7 +27,7 @@ struct AlbunsView: View {
                 ToolbarItem(placement:.topBarTrailing){
                     BtnAdd(ButtonAction: {
                         print("Add")
-                    })
+                    },icon: "plus")
                 }
             }
     }
