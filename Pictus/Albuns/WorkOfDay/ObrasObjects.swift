@@ -17,7 +17,7 @@ struct ObrasObjects{
             dataCriacao: Calendar.current.date(from: DateComponents(year: 1862, month: 10, day: 10)) ?? Date(),
             img:  UIImage(named:"ArtCover")?.jpegData(compressionQuality: 0.1) ?? Data(),
             origem: "Descobertas",
-            local: "Polônia",
+            local: "Polônia", context: ""
             
         ),
         Obras(
@@ -26,7 +26,7 @@ struct ObrasObjects{
             dataCriacao: Calendar.current.date(from: DateComponents(year: 1862, month: 10, day: 10)) ?? Date(),
             img:  UIImage(named:"ArtCover")?.jpegData(compressionQuality: 0.1) ?? Data(),
             origem: "bla",
-            local: "sla"
+            local: "sla", context: ""
         ),
         Obras(
             name: "junior",
@@ -34,7 +34,7 @@ struct ObrasObjects{
             dataCriacao: Calendar.current.date(from: DateComponents(year: 1862, month: 10, day: 10)) ?? Date(),
             img:  UIImage(named:"ArtCover")?.jpegData(compressionQuality: 0.1) ?? Data(),
             origem: "bla",
-            local: "sla"
+            local: "sla", context: ""
         ),
         Obras(
             name: "carlos",
@@ -42,7 +42,7 @@ struct ObrasObjects{
             dataCriacao: Calendar.current.date(from: DateComponents(year: 1862, month: 10, day: 10)) ?? Date(),
             img:  UIImage(named:"ArtCover")?.jpegData(compressionQuality: 0.1) ?? Data(),
             origem: "bla",
-            local: "sla"
+            local: "sla", context: ""
         )
     ]
     
