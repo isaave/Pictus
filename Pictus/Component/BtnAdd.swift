@@ -14,8 +14,15 @@ struct BtnAdd:View{
             ButtonAction()
         }label: {
             Image(systemName: icon)
-            
+                .font(.system(size: 20))
+                .foregroundColor(.primary)
+                .frame(width: 48, height: 48)
+                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 55, style: .continuous))
+
         }
+        .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 5)
+        .buttonStyle(.plain)
+
     }
 }
 
@@ -24,3 +31,4 @@ struct BtnAdd:View{
         print("Add")
     },icon: "plus")
 }
+
