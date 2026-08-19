@@ -117,6 +117,38 @@ struct ConfirmationAlert: View {
 }
 
 
+//=========================== ANDRE, quando for chamar o componente:
+//      @State private var showAlert = false
+
+//============================= DENTRO DO BOTÃO "ver mais":
+//      showAlert = true
+
+//    .overlay(
+//        Group {
+//            if showAlert {
+//                ZStack {
+//                    Color.black.opacity(0.4)
+//                        .ignoresSafeArea()
+//                        .onTapGesture { showAlert = false }
+//                    ConfirmationAlert(
+//                        title: "Atenção!",
+//                        message: "Acessar o contexto desta obra sem análise prévia pode impactar sua interpretação.",
+//                        question: "Deseja prosseguir?",
+//                        confirmTitle: "Sim",
+//                        cancelTitle: "Não",
+//                        onConfirm: {
+//                            showAlert = false
+//                        },
+//                        onCancel: {
+//                            showAlert = false
+//                        }
+//                    )
+//                }
+//            }
+//        }
+//    )
+
+
 //======== Quando forem puxar o alerta, chequem no figma os textos ;)=========
 #Preview {
     ConfirmationAlert(
