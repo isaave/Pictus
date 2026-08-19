@@ -53,9 +53,6 @@ class CoreDataRelationshipViewModel: ObservableObject {
         }
     }
     
-    func saveData() {
-        manager.save()
-    }
     
     func addObra(obra: Obras){
         let newObra = ObraEntity(context: manager.context)
@@ -100,13 +97,30 @@ class CoreDataRelationshipViewModel: ObservableObject {
     
     //.....................................//
     
-    func addReflection(rfx : String){
+    func addReflection(rfx: String, obra: ObraEntity) {
         let newReflexao = ReflexaoEntity(context: manager.context)
-       
+        
         newReflexao.textReflx = rfx
         newReflexao.dateReflx = Date()
+        newReflexao.obra = obra
+        
         saveData()
+       
+    }
+    
+    func fetchReflexoesDaObra(obra: ObraEntity) -> [ReflexaoEntity] {
+        let request: NSFetchRequest<ReflexaoEntity> = ReflexaoEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "obra == %@", obra)
+        request.sortDescriptors = [NSSortDescriptor(key: "dateReflx", ascending: false)]
+        
+        return (try? manager.context.fetch(request)) ?? []
     }
  
   
+    func saveData() {
+        manager.save()
+        fetchObras()
+    }
 }
+
+
