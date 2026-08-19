@@ -10,7 +10,7 @@ struct BtnDescobertas: View {
                 Image(systemName: "gift.fill")
                     .font(.system(size: 20))
                     .foregroundColor(.primary)
-                    .frame(width: 48, height: 48)
+                    .frame(width: 50, height: 50)
                     .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 55, style: .continuous))
                 
                 if !hasDiscovered {

@@ -128,6 +128,8 @@ struct CollectionView: View {
                             .frame(width: 48, height: 48)
                         }
                         .padding(.horizontal)
+                        .padding(.top, -10)
+                        
                         
                         // Segmented Control
                         ArtSegmentedControl(selection: $selectedMode)
@@ -166,6 +168,7 @@ struct CollectionView: View {
                             Text("Obras")
                                 .font(.system(size: 28, weight: .bold))
                                 .foregroundColor(.primary)
+                                .padding(.horizontal, 2)
                             
                             Spacer()
                             
@@ -174,9 +177,11 @@ struct CollectionView: View {
                                 icon: "plus"
                             )
                             .frame(width: 40, height: 40)
+                            .padding(.horizontal, 9)
                         }
-                        .padding(.horizontal)
+                    
                         .padding(.top, 10)
+                        .padding(.horizontal)
                         
                         if filteredObras.isEmpty {
                             VStack(spacing: 10) {
@@ -240,6 +245,7 @@ struct CollectionView: View {
             }
         }
         .searchable(text: $searchText, prompt: "Buscar obras e álbuns")
+        .ignoresSafeArea()
     }
     
     // MARK: - Métodos Auxiliares
@@ -296,6 +302,7 @@ struct CollectionView: View {
         }
     }
 }
+   
 
 #Preview {
     CollectionView()
