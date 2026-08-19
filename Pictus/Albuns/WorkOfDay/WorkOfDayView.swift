@@ -13,12 +13,11 @@ struct WorkOfDay: View {
         sortDescriptors: [NSSortDescriptor(keyPath: \ObraEntity.dateObra, ascending: false)]
     )
     var obras: FetchedResults<ObraEntity>
-    @AppStorage("selectedIndex") private var selectedIndex: Int = 0
-    @AppStorage("lastRollDate") private var lastRollDate: String = ""
+   
     @State private var mostrarToast = false
     
     var body: some View {
-        
+        @AppStorage("selectedIndex")  var selectedIndex: Int = 0
         let obraAtual = obras[selectedIndex]
         
         ScrollView{
@@ -63,37 +62,10 @@ struct WorkOfDay: View {
             }
         }
         .ignoresSafeArea(edges:.top)
-        .onAppear {
-            viewModel.seedObrasIfNeeded()
-            verificarESortearObraDoDia()
-        }
+        
     }
     
-    private func verificarESortearObraDoDia() {
-        guard !obras.isEmpty else { return }
-        let hojeString = Date().formatted(date: .numeric, time: .omitted)
-        if lastRollDate != hojeString || !obras.indices.contains(selectedIndex) {
-            executarSorteio()
-            lastRollDate = hojeString
-        }
-    }
-    private func sortearNovaObraManual() {
-        guard !obras.isEmpty else { return }
-        executarSorteio()
-        lastRollDate = Date().formatted(date: .numeric, time: .omitted)
-    }
-    
-    private func executarSorteio() {
-        if obras.count > 1 {
-            var novoIndice = selectedIndex
-            while novoIndice == selectedIndex {
-                novoIndice = Int.random(in: 0..<obras.count)
-            }
-            selectedIndex = novoIndice
-        } else {
-            selectedIndex = 0
-        }
-    }
+   
 }
 
 

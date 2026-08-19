@@ -23,8 +23,8 @@ struct AlbunsView: View {
             }
             .navigationTitle("Álbuns")
             .searchable(text: $searchText, prompt: "Buscar álbuns")
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+            .toolbar{
+                ToolbarItem(placement:.topBarTrailing){
                     BtnAdd(ButtonAction: {
                         print("Add")
                     },icon: "plus")

@@ -20,9 +20,12 @@ struct MockObra {
 }
 
 struct CollectionView: View {
-
+    @StateObject var viewModel: CoreDataRelationshipViewModel = CoreDataRelationshipViewModel()
     @State private var selectedMode: SegmentedClasses = .all
     @State private var searchText = ""
+    
+    @AppStorage("selectedIndex") private var selectedIndex: Int = 0
+    @AppStorage("lastRollDate") private var lastRollDate: String = ""
 
     let albumNames = ["Grafite", "Realismo", "Pintura", "Barroco", "Retrato"]
 
@@ -101,8 +104,8 @@ struct CollectionView: View {
                             .foregroundColor(.primary)
                         Spacer()
                         BtnAdd(ButtonAction: {
-                            print("Add obra")
-                        })
+                            print("Add")
+                        },icon: "plus")
                         .frame(width: 40, height: 40)
                     }
                     .padding(.horizontal)
@@ -121,9 +124,40 @@ struct CollectionView: View {
                 }
             }
             .searchable(text: $searchText, prompt: "Buscar obras e álbuns")
+            .onAppear {
+                viewModel.seedObrasIfNeeded()
+                verificarESortearObraDoDia()
+            }
+        }
+        
+    }
+    private func verificarESortearObraDoDia() {
+        guard !obras.isEmpty else { return }
+        let hojeString = Date().formatted(date: .numeric, time: .omitted)
+        if lastRollDate != hojeString || !obras.indices.contains(selectedIndex) {
+            executarSorteio()
+            lastRollDate = hojeString
+        }
+    }
+    private func sortearNovaObraManual() {
+        guard !obras.isEmpty else { return }
+        executarSorteio()
+        lastRollDate = Date().formatted(date: .numeric, time: .omitted)
+    }
+    
+    private func executarSorteio() {
+        if obras.count > 1 {
+            var novoIndice = selectedIndex
+            while novoIndice == selectedIndex {
+                novoIndice = Int.random(in: 0..<obras.count)
+            }
+            selectedIndex = novoIndice
+        } else {
+            selectedIndex = 0
         }
     }
 }
+
 
 #Preview {
     CollectionView()

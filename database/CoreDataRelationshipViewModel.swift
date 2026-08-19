@@ -22,7 +22,7 @@ class CoreDataRelationshipViewModel: ObservableObject {
         fetchObras()
     }
     
-    private func seedObrasIfNeeded() {
+     func seedObrasIfNeeded() {
         if !hasObras() {
             let objetosIniciais = ObrasObjects().objects
             for obra in objetosIniciais {
@@ -59,7 +59,7 @@ class CoreDataRelationshipViewModel: ObservableObject {
     
     func addObra(obra: Obras){
         let newObra = ObraEntity(context: manager.context)
-       // newObra.ctxObra = obra.context
+        newObra.ctxObra = obra.context.trimmingCharacters(in: .whitespaces).isEmpty ? nil : obra.context
         newObra.id = UUID()
         newObra.nameObra = obra.name.trimmingCharacters(in: .whitespaces).isEmpty ? "Desconhesido" : obra.name
         newObra.dateObra = obra.dataCriacao > Date() ? Date() : obra.dataCriacao
@@ -108,8 +108,5 @@ class CoreDataRelationshipViewModel: ObservableObject {
         saveData()
     }
  
-    func addAlbuns(){
-        
-    }
+  
 }
-
