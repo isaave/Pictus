@@ -8,11 +8,12 @@
 import SwiftUI
 struct BtnAdd:View{
     var ButtonAction: () -> Void
+    var icon: String
     var body: some View{
         Button{
             ButtonAction()
         }label: {
-            Image(systemName: "plus")
+            Image(systemName: icon)
             
         }
     }
@@ -21,5 +22,5 @@ struct BtnAdd:View{
 #Preview {
     BtnAdd(ButtonAction: {
         print("Add")
-    })
+    },icon: "plus")
 }

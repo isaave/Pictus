@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct PictusApp: App {
+    let coreDataManager = CoreDataManage.instance
     var body: some Scene {
         WindowGroup {
             CollectionView()
+                .environment(\.managedObjectContext, coreDataManager.context)
         }
     }
 }

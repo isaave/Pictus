@@ -10,27 +10,64 @@ import SwiftUI
 import Combine
 import CoreData
 import SwiftData
-
+import Foundation
 
 class CoreDataRelationshipViewModel: ObservableObject {
     let manager = CoreDataManage.instance
         
-    func addObra(name: String?, nameAutor: String?, dataCriacao: Date?, context: String, img: Data, origen: String ){
+    @Published var obrasEntities: [ObraEntity] = []
         
-        let newObra = ObraEntity(context: manager.context)
-        newObra.ctxObra = context.trimmingCharacters(in: .whitespaces).isEmpty ? nil : context
-        
-        
-        newObra.id = UUID()
-        newObra.nameObra = context.trimmingCharacters(in: .whitespaces).isEmpty ? "Desconhesido" : name
-        newObra.dateObra = dataCriacao
-        newObra.imgObra = img
-        newObra.origen = origen
-        newObra.ctxLibetado = false
-        
-        saveData()
+        init() {
+            seedObrasIfNeeded()
+            fetchObras()
         }
+        
+        func seedObrasIfNeeded() {
+            if !hasObras() {
+                let objetosIniciais = ObrasObjects().objects
+                for obra in objetosIniciais {
+                    addObra(obra: obra)
+                }
+            }
+        }
+        private func hasObras() -> Bool {
+            let request: NSFetchRequest<ObraEntity> = ObraEntity.fetchRequest()
+            request.fetchLimit = 1
+            
+            do {
+                let count = try manager.context.count(for: request)
+                return count > 0
+            } catch {
+                print("Erro ao checar existência de obras: \(error)")
+                return false
+            }
+        }
+        
+        func fetchObras() {
+            let request: NSFetchRequest<ObraEntity> = ObraEntity.fetchRequest()
+            do {
+                obrasEntities = try manager.context.fetch(request)
+            } catch {
+                print("Erro ao buscar Obras: \(error)")
+            }
+        }
+    // func obras abaixo
+    func addObra(obra: Obras){
+        let newObra = ObraEntity(context: manager.context)
+//        newObra.ctxObra = obra.context.trimmingCharacters(in: .whitespaces).isEmpty ? nil : obra.context
+        newObra.id = UUID()
+        newObra.nameObra = obra.name.trimmingCharacters(in: .whitespaces).isEmpty ? "Desconhesido" : obra.name
+        newObra.dateObra = obra.dataCriacao > Date() ? Date() : obra.dataCriacao
+        newObra.imgObra = obra.img
+        newObra.local = obra.local
+        newObra.origen = obra.origem
+        newObra.ctxLibetado = false
+        saveData()
+        fetchObras()
+        }
+    func getTodasOrigen(){
     
+    }
     
     
     func editDescription(uuid: UUID){
@@ -43,6 +80,8 @@ class CoreDataRelationshipViewModel: ObservableObject {
         }
         saveData()
     }
+    
+    //.....................................//
     
     func addReflection(rfx : String){
         let newReflexao = ReflexaoEntity(context: manager.context)

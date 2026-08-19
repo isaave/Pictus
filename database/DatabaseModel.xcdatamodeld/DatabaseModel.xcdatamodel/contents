@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24902" systemVersion="25G76" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="24902" systemVersion="25F84" minimumToolsVersion="Automatic" sourceLanguage="Swift" usedWithSwiftData="YES" userDefinedModelVersionIdentifier="">
     <entity name="AlbumEntity" representedClassName="AlbumEntity" syncable="YES" codeGenerationType="class">
         <attribute name="imgAlbun" optional="YES" attributeType="Binary"/>
         <attribute name="nameAlbun" optional="YES" attributeType="String"/>
@@ -11,6 +11,7 @@
         <attribute name="dateObra" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="imgObra" optional="YES" attributeType="Binary"/>
+        <attribute name="local" optional="YES" attributeType="String"/>
         <attribute name="nameAutor" optional="YES" attributeType="String"/>
         <attribute name="nameObra" optional="YES" attributeType="String"/>
         <attribute name="origen" optional="YES" attributeType="String"/>
