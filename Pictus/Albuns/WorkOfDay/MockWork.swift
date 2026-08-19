@@ -12,16 +12,19 @@ class Obras{
     var name: String = ""
     var nameAutor: String = ""
     var dataCriacao: Date = Date()
-    var context: Bool = false
+    var context: String = ""
     var img: Data = Data()
     var origem: String = ""
     var local: String = ""
     
-    init(name: String, nameAutor: String, dataCriacao: Date = Date(), img: Data, origem: String,local: String) {
+    init(name: String, nameAutor: String, dataCriacao: Date = Date(), img: Data, origem: String,local: String, context: String) {
             self.name = name
             self.nameAutor = nameAutor
             self.dataCriacao = dataCriacao
             self.img = img
             self.origem = origem
+            self.context = context
         }
 }
+
+
