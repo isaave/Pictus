@@ -108,7 +108,5 @@ class CoreDataRelationshipViewModel: ObservableObject {
         saveData()
     }
  
-    func addAlbuns(){
-        
-    }
+  
 }
