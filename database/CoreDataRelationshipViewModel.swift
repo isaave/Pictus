@@ -15,24 +15,24 @@ import Foundation
 class CoreDataRelationshipViewModel: ObservableObject {
     let manager = CoreDataManage.instance
   
-    @Published var obrasEntities: [ObraEntity] = []
+    @Published var obrasEntities: [ArtEntity] = []
 
     init() {
         seedObrasIfNeeded()
         fetchObras()
     }
     
-     func seedObrasIfNeeded() {
-        if !hasObras() {
-            let objetosIniciais = ObrasObjects().objects
-            for obra in objetosIniciais {
-                addObra(obra: obra)
-            }
+    func seedObrasIfNeeded() {
+    if !hasObras() {
+        let objetosIniciais = ObrasObjects().objects
+        for obra in objetosIniciais {
+            addArt(obra: obra)
         }
     }
+}
     
     private func hasObras() -> Bool {
-        let request: NSFetchRequest<ObraEntity> = ObraEntity.fetchRequest()
+        let request: NSFetchRequest<ArtEntity> = ArtEntity.fetchRequest()
         request.fetchLimit = 1
         
         do {
@@ -45,31 +45,32 @@ class CoreDataRelationshipViewModel: ObservableObject {
     }
     
     func fetchObras() {
-        let request: NSFetchRequest<ObraEntity> = ObraEntity.fetchRequest()
+        let request: NSFetchRequest<ArtEntity> = ArtEntity.fetchRequest()
         do {
             obrasEntities = try manager.context.fetch(request)
-        } catch {
-            print("Erro ao buscar Obras: \(error)")
+        }catch let error {
+            print("Erro ao buscar Obras: \(error.localizedDescription)")
         }
     }
     
     
-    func addObra(obra: Obras){
-        let newObra = ObraEntity(context: manager.context)
-        newObra.ctxObra = obra.context.trimmingCharacters(in: .whitespaces).isEmpty ? nil : obra.context
+    func addArt(obra: Obras){
+        let newObra = ArtEntity(context: manager.context)
+        
+        newObra.ctxArt = obra.context.trimmingCharacters(in: .whitespaces).isEmpty ? nil : obra.context
         newObra.id = UUID()
-        newObra.nameObra = obra.name.trimmingCharacters(in: .whitespaces).isEmpty ? "Desconhesido" : obra.name
-        newObra.dateObra = obra.dataCriacao > Date() ? Date() : obra.dataCriacao
-        newObra.imgObra = obra.img
+        newObra.nameArt = obra.name.trimmingCharacters(in: .whitespaces).isEmpty ? "Desconhecido" : obra.name
+        newObra.dateArt = obra.dataCriacao > Date() ? Date() : obra.dataCriacao
+        newObra.imgArt = obra.img
         newObra.local = obra.local
-        newObra.origen = obra.origem
-        newObra.ctxLibetado = false
+        newObra.origin = obra.origem
+        newObra.ctxReleased = false
         saveData()
 
         fetchObras()
     }
 
-    func getTodasOrigen() -> [String] {
+    func getAllOrigin() -> [String] {
         let request = NSFetchRequest<NSFetchRequestResult>(entityName: "ObraEntity")
         request.propertiesToFetch = ["origen"]
         request.resultType = .dictionaryResultType
@@ -85,42 +86,92 @@ class CoreDataRelationshipViewModel: ObservableObject {
     }
     
     func editDescription(uuid: UUID){
-        let busca: NSFetchRequest<ObraEntity> = ObraEntity.fetchRequest()
+        let busca: NSFetchRequest<ArtEntity> = ArtEntity.fetchRequest()
         busca.predicate  = NSPredicate(format: "id == %@", uuid as CVarArg)
         busca.fetchLimit = 1
         
         if let result = try? manager.context.fetch(busca).first {
-            result.ctxLibetado = true
+            result.ctxReleased = true
         }
         saveData()
     }
     
     //.....................................//
     
-    func addReflection(rfx: String, obra: ObraEntity) {
-        let newReflexao = ReflexaoEntity(context: manager.context)
+    func addReflection(rfx: String, obra: ArtEntity) {
+        let newReflexao = ReflectionEntity(context: manager.context)
         
         newReflexao.textReflx = rfx
         newReflexao.dateReflx = Date()
-        newReflexao.obra = obra
+        newReflexao.art = obra
         
         saveData()
        
     }
     
-    func fetchReflexoesDaObra(obra: ObraEntity) -> [ReflexaoEntity] {
-        let request: NSFetchRequest<ReflexaoEntity> = ReflexaoEntity.fetchRequest()
+    func fetchReflexoesDaObra(obra: ArtEntity) -> [ReflectionEntity] {
+        let request: NSFetchRequest<ReflectionEntity> = ReflectionEntity.fetchRequest()
         request.predicate = NSPredicate(format: "obra == %@", obra)
         request.sortDescriptors = [NSSortDescriptor(key: "dateReflx", ascending: false)]
         
         return (try? manager.context.fetch(request)) ?? []
     }
+    
+    
+    //...........................................//
  
-  
+    func addAlbuns(nome: String, obras: [ArtEntity]){
+        let newAlbum = AlbumEntity(context: manager.context)
+        
+        newAlbum.idAlbum = UUID()
+        newAlbum.nameAlbum = nome
+        newAlbum.imgAlbum = obras.first?.imgArt
+        
+        let obrasSet = NSSet(array: obras)
+            newAlbum.addToArt(obrasSet)
+        
+        saveData()
+    }
+    
+    func addObrasToAlbum(nomeAlbum: String, novasObras: [ArtEntity]) {
+        let request: NSFetchRequest<AlbumEntity> = AlbumEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "nameAlbun == %@", nomeAlbum)
+        request.fetchLimit = 1
+
+        guard let album = try? manager.context.fetch(request).first else {
+            print("Álbum não encontrado: \(nomeAlbum)")
+            return
+        }
+
+        for obra in novasObras {
+            album.addToArt(obra)
+        }
+
+        saveData()
+    }
+    
+    func deleteAlbun(id: UUID) {
+        let request: NSFetchRequest<AlbumEntity> = AlbumEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
+        request.fetchLimit = 1
+        do{
+            guard let album = try manager.context.fetch(request).first else {
+                    print("Álbum não encontrado")
+                    return
+                }
+                manager.context.delete(album)
+                saveData()
+        }catch let error {
+            print(error.localizedDescription)
+        }
+    }
+    
+    
+    
+    
     func saveData() {
         manager.save()
         fetchObras()
     }
 }
-
 
