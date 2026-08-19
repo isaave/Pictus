@@ -6,27 +6,21 @@
 //
 
 import SwiftUI
-
-struct BtnAdd: View {
+struct BtnAdd:View{
     var ButtonAction: () -> Void
-
-    var body: some View {
-        Button {
+    var icon: String
+    var body: some View{
+        Button{
             ButtonAction()
-        } label: {
-            Image(systemName: "plus")
-                .font(.system(size: 20, weight: .semibold))
-                .foregroundColor(.primary)
-                .frame(width: 48, height: 48)
-                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 55, style: .continuous))
+        }label: {
+            Image(systemName: icon)
+            
         }
-        .buttonStyle(.plain)
-        .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 5)
     }
 }
 
 #Preview {
     BtnAdd(ButtonAction: {
         print("Add")
-    })
+    },icon: "plus")
 }

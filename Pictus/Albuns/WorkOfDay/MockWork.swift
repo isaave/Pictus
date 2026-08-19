@@ -9,10 +9,21 @@ import Foundation
 import SwiftUI
 
 class Obras{
-    let name: String = ""
-    let nameAutor: String = ""
-    let dataCriacao: Date = Date()
-    let context: String = ""
-    let img: Data = Data()
-    let origem: String = ""
+    var name: String = ""
+    var nameAutor: String = ""
+    var dataCriacao: Date = Date()
+    var context: Bool = false
+    var img: Data = Data()
+    var origem: String = ""
+    var local: String = ""
+    
+    init(name: String, nameAutor: String, dataCriacao: Date = Date(), img: Data, origem: String,local: String) {
+            self.name = name
+            self.nameAutor = nameAutor
+            self.dataCriacao = dataCriacao
+            self.img = img
+            self.origem = origem
+        }
 }
+
+
