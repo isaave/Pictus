@@ -8,9 +8,10 @@
 import SwiftUI
 
 struct NewArtInfo: View {
-    @State private var nome = ""
-    @State private var nomeAutor = ""
-    @State private var dataCriacao = Date()
+    @Binding var nome: String
+    @Binding var nomeAutor: String
+    @Binding var dataCriacao: Date
+    @Binding var local: String
     var body: some View {
         VStack{
             VStack(alignment: .leading, spacing: 10){
@@ -81,8 +82,4 @@ struct NewArtInfo: View {
         }
 
     }
-}
-
-#Preview {
-    NewArtInfo()
 }

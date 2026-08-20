@@ -1,3 +1,10 @@
+//
+//  NewArtView.swift
+//  Pictus
+//
+//  Created by Pedro Henrique Hossaka Teruel on 19/08/26.
+//
+
 import SwiftUI
 import PhotosUI
 import UIKit
@@ -6,14 +13,22 @@ struct NewArtView: View {
 
     @Environment(\.dismiss) private var dismiss
     
-    let onSave: (Obras) -> Void
+    let obraID: UUID
+
+    let onSave: (
+        _ nomeAutor: String?,
+        _ nomeObra: String?,
+        _ data: Date?,
+        _ local: String?,
+        _ imagem: Data?,
+        _ id: UUID
+    ) -> Void
+    
     
     @State private var nome = ""
     @State private var nomeAutor = ""
     @State private var dataCriacao = Date()
-    @State private var contexto = ""
     @State private var local = ""
-    @State private var origem = ""
 
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var imageData: Data?
@@ -23,82 +38,120 @@ struct NewArtView: View {
     @State private var showImageError = false
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: 0) {
-                    ZStack(alignment: .bottomLeading) {
-                        if let imagePreview {
-                            Image(uiImage: imagePreview)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 470)
-                                .clipped()
-                        } else {
-                            ZStack {
-                                PhotosPicker(
-                                    selection: $selectedPhoto,
-                                    matching: .images
-                                ) {
-                                    Group {
-                                        Image(systemName: "photo")
+        GeometryReader { geometry in
+            NavigationStack {
+                ScrollView {
+                    VStack(spacing: 0) {
+                        ZStack(alignment: .bottomLeading) {
+                            if let imagePreview {
+                                Image(uiImage: imagePreview)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(maxWidth: geometry.size.width)
+                                    .frame(height: 400)
+                                    .clipped()
+                            } else {
+                                ZStack {
+                                    PhotosPicker(
+                                        selection: $selectedPhoto,
+                                        matching: .images
+                                    ) {
+                                        Group {
+                                            Image(systemName: "photo")
+                                        }
+                                        .font(.title3)
+                                        .foregroundStyle(.gray)
+                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                                        .background(
+                                            .black.opacity(0.3)
+                                        )
                                     }
-                                    .font(.title3)
-                                    .foregroundStyle(.gray)
-                                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                    .background(
-                                        .black.opacity(0.3)
+                                    .accessibilityLabel(
+                                        imageData == nil
+                                        ? "Selecionar imagem"
+                                        : "Alterar imagem"
                                     )
                                 }
-                                .accessibilityLabel(
-                                    imageData == nil
-                                    ? "Selecionar imagem"
-                                    : "Alterar imagem"
-                                )
                             }
+                            
+                            imagePickerButton
                         }
-
-                        imagePickerButton
+                        .frame(height: 400)
                     }
-                    .frame(height: 400)
-                }
-                
-                NewArtInfo()
+                    
+                    NewArtInfo(
+                        nome: $nome,
+                        nomeAutor: $nomeAutor,
+                        dataCriacao: $dataCriacao,
+                        local: $local
+                    )
                     .padding()
-                
-                
-                ReflectionCard()
-                    .padding(.horizontal)
-                    .padding(.top, 10)
-                    .frame(minHeight: 520)
-            }
-            .background(Color(uiColor: .systemBackground))
-            .ignoresSafeArea(edges: .top)
-            .scrollDismissesKeyboard(.interactively)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        dismiss()
-                    } label: {
-                        Image(systemName: "folder.fill.badge.plus")
-                            .fontWeight(.semibold)
+                    
+                    
+                    ReflectionCard()
+                        .padding(.horizontal)
+                        .frame(minHeight: 520)
+                    
+                    HStack {
+                        Spacer()
+                        Button {
+                            save()
+                            print()
+                        } label: {
+                            Text("Registrar Obra")
+                                .font(.body)
+                                .fontWeight(.medium)
+                                .foregroundStyle(Color.gray.opacity(0.8))
+                                .padding(.horizontal, 30)
+                                .padding(.vertical)
+                                .background {
+                                    RoundedRectangle(
+                                        cornerRadius: 32,
+                                        style: .continuous
+                                    )
+                                    .fill(.clear)
+                                    .glassEffect(
+                                        .regular.interactive(),
+                                        in: .rect(
+                                            cornerRadius: 32,
+                                            style: .continuous
+                                        )
+                                    )
+                                }
+                        }
+                        .disabled(!canSave)
+                        Spacer()
+                    }.padding()
+                    
+                }
+                .background(Color(uiColor: .systemBackground))
+                .ignoresSafeArea(edges: .top)
+                .scrollDismissesKeyboard(.interactively)
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            dismiss()
+                        } label: {
+                            Image(systemName: "folder.fill.badge.plus")
+                                .fontWeight(.semibold)
+                        }
                     }
                 }
-            }
-            .onChange(of: selectedPhoto) { newPhoto in
-                guard let newPhoto else { return }
-
-                Task {
-                    await loadImage(from: newPhoto)
+                .onChange(of: selectedPhoto) { newPhoto in
+                    guard let newPhoto else { return }
+                    
+                    Task {
+                        await loadImage(from: newPhoto)
+                    }
                 }
-            }
-            .alert(
-                "Não foi possível carregar a imagem",
-                isPresented: $showImageError
-            ) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text("Selecione outra imagem e tente novamente.")
+                .alert(
+                    "Não foi possível carregar a imagem",
+                    isPresented: $showImageError
+                ) {
+                    Button("OK", role: .cancel) { }
+                } message: {
+                    Text("Selecione outra imagem e tente novamente.")
+                }
             }
         }
     }
@@ -134,24 +187,20 @@ private extension NewArtView {
     var canSave: Bool {
         imageData != nil && !isLoadingImage
     }
-
-    func save() {
-        guard let imageData else {
-            return
-        }
-
-        let novaObra = Obras(
-            name: nome,
-            nameAutor: nomeAutor,
-            dataCriacao: dataCriacao,
-            img: imageData,
-            origem: origem,
-            local: local,
-            context: contexto
+    
+    private func save() {
+        onSave(
+            nomeAutor,
+            nome,
+            dataCriacao,
+            local,
+            imageData,
+            obraID
         )
 
-        onSave(novaObra)
+        dismiss()
     }
+    
 
     @MainActor
     func loadImage(from item: PhotosPickerItem) async {
@@ -182,7 +231,15 @@ private extension NewArtView {
 }
 
 #Preview {
-    NewArtView { obra in
-        print("Obra pronta para salvar:", obra)
+    NewArtView(
+        obraID: UUID()
+    ) { nomeAutor, nomeObra, data, local, imagem, id in
+        print("Salvar obra:")
+        print("ID:", id)
+        print("Nome:", nomeObra ?? "")
+        print("Autor:", nomeAutor ?? "")
+        print("Data:", data as Any)
+        print("Local:", local ?? "")
+        print("Imagem:", imagem != nil)
     }
 }
