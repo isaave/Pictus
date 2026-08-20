@@ -13,16 +13,18 @@ struct NewArtView: View {
 
     @Environment(\.dismiss) private var dismiss
     
+    @ObservedObject var viewModel: CoreDataRelationshipViewModel
+    
     let obraID: UUID
 
-    let onSave: (
-        _ nomeAutor: String?,
-        _ nomeObra: String?,
-        _ data: Date?,
-        _ local: String?,
-        _ imagem: Data?,
-        _ id: UUID
-    ) -> Void
+//    let onSave: (
+//        _ nomeAutor: String?,
+//        _ nomeObra: String?,
+//        _ data: Date?,
+//        _ local: String?,
+//        _ imagem: Data?,
+//        _ id: UUID
+//    ) -> Void
     
     
     @State private var nome = ""
@@ -96,7 +98,6 @@ struct NewArtView: View {
                         Spacer()
                         Button {
                             save()
-                            print()
                         } label: {
                             Text("Registrar Obra")
                                 .font(.body)
@@ -188,18 +189,32 @@ private extension NewArtView {
         imageData != nil && !isLoadingImage
     }
     
+//    private func save() {
+//        onSave(
+//            nomeAutor,
+//            nome,
+//            dataCriacao,
+//            local,
+//            imageData,
+//            obraID
+//        )
+//        dismiss()
+//    }
+    
+    
     private func save() {
-        onSave(
-            nomeAutor,
-            nome,
-            dataCriacao,
-            local,
-            imageData,
-            obraID
+        viewModel.editObra(
+            name: nomeAutor,
+            nameArt: nome,
+            data: dataCriacao,
+            local: local,
+            img: imageData,
+            uuid: obraID
         )
 
         dismiss()
     }
+    
     
 
     @MainActor
@@ -230,16 +245,23 @@ private extension NewArtView {
     }
 }
 
+//#Preview {
+//    NewArtView(
+//        obraID: UUID()
+//    ) { nomeAutor, nomeObra, data, local, imagem, id in
+//        print("Salvar obra:")
+//        print("ID:", id)
+//        print("Nome:", nomeObra ?? "")
+//        print("Autor:", nomeAutor ?? "")
+//        print("Data:", data as Any)
+//        print("Local:", local ?? "")
+//        print("Imagem:", imagem != nil)
+//    }
+//}
+
 #Preview {
     NewArtView(
+        viewModel: CoreDataRelationshipViewModel(),
         obraID: UUID()
-    ) { nomeAutor, nomeObra, data, local, imagem, id in
-        print("Salvar obra:")
-        print("ID:", id)
-        print("Nome:", nomeObra ?? "")
-        print("Autor:", nomeAutor ?? "")
-        print("Data:", data as Any)
-        print("Local:", local ?? "")
-        print("Imagem:", imagem != nil)
-    }
+    )
 }
