@@ -45,22 +45,24 @@ struct ConfirmationAlert: View {
     }
 
     private var content: some View {
-        VStack(alignment: .leading, spacing: 24) {
-            VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 12) {
+            VStack(alignment: .leading) {
                 Text(title)
-                    .font(.title2)
+                    .font(.headline)
                     .fontWeight(.semibold)
                     .accessibilityFocused(
                         $isTitleFocused
                     )
+                    .padding(.bottom, 8)
                 Text(message)
-                    .font(.body)
+                    .font(.subheadline)
                     .foregroundStyle(.secondary)
+                    .padding(.bottom, 2)
                 Text(question)
-                    .font(.body)
+                    .font(.subheadline)
                     .foregroundStyle(.primary)
                     .fontWeight(Font.Weight.semibold)
-                    
+                    .padding(.bottom, 16)
             }
 
             VStack(spacing: 12) {
@@ -70,49 +72,37 @@ struct ConfirmationAlert: View {
                     HStack{
                         Text(confirmTitle)
                             .font(.headline)
-                            .foregroundColor(.white)
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background {
-                        Capsule()
-                            .fill(Color(.accent))
-                    }
-
+                    .frame(height: 28)
                 }
-                //.buttonStyle(.borderedProminent)
+                .buttonStyle(.glassProminent)
                 .tint(.accentColor)
-                
-                
-                //IMport pod
-                
+
                 Button(action: {
                     onCancel()
                 }) {
                     HStack{
                         Text(cancelTitle)
                             .font(.headline)
-                            .foregroundColor(.primary)
                     }
                     .frame(maxWidth: .infinity)
-                    .frame(height: 44)
-                    .background {
-                        Capsule()
-                            .fill(Color(.systemGray3))
-                    }
-
+                    .frame(height: 28)
                 }
-                //.buttonStyle(.borderedProminent)
-                //.tint(Color(.systemGray3))
-
+                .buttonStyle(.glass)
             }
+            .font(.body)
         }
         .padding(24)
-        .frame(maxWidth: 420)
-        .background(.regularMaterial)
+        .frame(maxWidth: 300)
+        .background {
+            RoundedRectangle(cornerRadius: 38, style: .continuous)
+                .fill(.clear)
+                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 38, style: .continuous))
+        }
         .clipShape(
             RoundedRectangle(
-                cornerRadius: 28,
+                cornerRadius: 38,
                 style: .continuous
             )
         )
@@ -126,14 +116,49 @@ struct ConfirmationAlert: View {
     }
 }
 
+
+//=========================== ANDRE, quando for chamar o componente:
+//      @State private var showAlert = false
+
+//============================= DENTRO DO BOTÃO "ver mais":
+//      showAlert = true
+
+//    .overlay(
+//        Group {
+//            if showAlert {
+//                ZStack {
+//                    Color.black.opacity(0.4)
+//                        .ignoresSafeArea()
+//                        .onTapGesture { showAlert = false }
+//                    ConfirmationAlert(
+//                        title: "Atenção!",
+//                        message: "Acessar o contexto desta obra sem análise prévia pode impactar sua interpretação.",
+//                        question: "Deseja prosseguir?",
+//                        confirmTitle: "Sim",
+//                        cancelTitle: "Não",
+//                        onConfirm: {
+//                            showAlert = false
+//                        },
+//                        onCancel: {
+//                            showAlert = false
+//                        }
+//                    )
+//                }
+//            }
+//        }
+//    )
+
+
+//======== Quando forem puxar o alerta, chequem no figma os textos ;)=========
 #Preview {
     ConfirmationAlert(
-        title: "Atenção",
+        title: "Atenção!",
         message: "Acessar o contexto desta obra sem análise prévia pode impactar sua interpretação.",
-        question: "Deseja continuar?",
+        question: "Deseja prosseguir?",
         confirmTitle: "Sim",
         cancelTitle: "Não",
         onConfirm: {},
         onCancel: {}
     )
 }
+

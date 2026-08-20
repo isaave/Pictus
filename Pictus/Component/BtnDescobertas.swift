@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct BtnDescobertas: View {
-
-    @State private var descoberta: Bool = true
+    @AppStorage("hasDiscovered") private var hasDiscovered: Bool = false
+    var action: () -> Void 
 
     var body: some View {
-        
+        Button(action: action) {
             ZStack(alignment: .topTrailing) {
                 Image(systemName: "gift.fill")
                     .font(.system(size: 20))
@@ -13,7 +13,7 @@ struct BtnDescobertas: View {
                     .frame(width: 48, height: 48)
                     .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 55, style: .continuous))
                 
-                if descoberta {
+                if !hasDiscovered {
                     Circle()
                         .fill(Color.accentColor)
                         .frame(width: 15, height: 15)
@@ -21,16 +21,15 @@ struct BtnDescobertas: View {
                 }
             }
             .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 5)
-            .buttonStyle(.plain)
         }
-       
+        .buttonStyle(.plain)
     }
-
+}
 
 #Preview {
     NavigationStack {
         ZStack {
-            BtnDescobertas()
+            BtnDescobertas(action: {})
         }
     }
 }

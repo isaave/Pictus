@@ -17,7 +17,8 @@ struct ObrasObjects{
             dataCriacao: Calendar.current.date(from: DateComponents(year: 1862, month: 10, day: 10)) ?? Date(),
             img:  UIImage(named:"ArtCover")?.jpegData(compressionQuality: 0.1) ?? Data(),
             origem: "Descobertas",
-            local: "Polônia", context: ""
+            local: "Polônia", 
+            context: "Ambientada na Polônia do século XVI, a pintura retrata Stańczyk, o lendário bobo da corte conhecido por sua inteligência e franqueza. Enquanto um baile acontece ao fundo, ele permanece sozinho, mergulhado em seus próprios pensamentos, criando um contraste marcante entre a celebração e o silêncio."
             
         ),
         Obras(
@@ -26,7 +27,8 @@ struct ObrasObjects{
             dataCriacao: Calendar.current.date(from: DateComponents(year: 1862, month: 10, day: 10)) ?? Date(),
             img:  UIImage(named:"ArtCover")?.jpegData(compressionQuality: 0.1) ?? Data(),
             origem: "bla",
-            local: "sla", context: ""
+            local: "sla",
+            context: "Ambientada na Polônia do século XVI, a pintura retrata Stańczyk, o lendário bobo da corte conhecido por sua inteligência e franqueza. Enquanto um baile acontece ao fundo, ele permanece sozinho, mergulhado em seus próprios pensamentos, criando um contraste marcante entre a celebração e o silêncio."
         ),
         Obras(
             name: "junior",
@@ -34,7 +36,8 @@ struct ObrasObjects{
             dataCriacao: Calendar.current.date(from: DateComponents(year: 1862, month: 10, day: 10)) ?? Date(),
             img:  UIImage(named:"ArtCover")?.jpegData(compressionQuality: 0.1) ?? Data(),
             origem: "bla",
-            local: "sla", context: ""
+            local: "sla",
+            context: "Ambientada na Polônia do século XVI, a pintura retrata Stańczyk, o lendário bobo da corte conhecido por sua inteligência e franqueza. Enquanto um baile acontece ao fundo, ele permanece sozinho, mergulhado em seus próprios pensamentos, criando um contraste marcante entre a celebração e o silêncio."
         ),
         Obras(
             name: "carlos",
@@ -42,7 +45,8 @@ struct ObrasObjects{
             dataCriacao: Calendar.current.date(from: DateComponents(year: 1862, month: 10, day: 10)) ?? Date(),
             img:  UIImage(named:"ArtCover")?.jpegData(compressionQuality: 0.1) ?? Data(),
             origem: "bla",
-            local: "sla", context: ""
+            local: "sla",
+            context: "Ambientada na Polônia do século XVI, a pintura retrata Stańczyk, o lendário bobo da corte conhecido por sua inteligência e franqueza. Enquanto um baile acontece ao fundo, ele permanece sozinho, mergulhado em seus próprios pensamentos, criando um contraste marcante entre a celebração e o silêncio."
         )
     ]
     
