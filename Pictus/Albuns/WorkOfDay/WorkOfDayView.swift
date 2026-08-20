@@ -10,9 +10,9 @@ import SwiftUI
 struct WorkOfDay: View {
     @StateObject var viewModel: CoreDataRelationshipViewModel = CoreDataRelationshipViewModel()
     @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \ObraEntity.dateObra, ascending: false)]
+        sortDescriptors: [NSSortDescriptor(keyPath: \ArtEntity.dateArt, ascending: false)]
     )
-    var obras: FetchedResults<ObraEntity>
+    var obras: FetchedResults<ArtEntity>
     @AppStorage("selectedIndex") private var selectedIndex: Int = 0
     @AppStorage("lastRollDate") private var lastRollDate: String = ""
     @State private var mostrarToast = false
@@ -22,12 +22,12 @@ struct WorkOfDay: View {
         let obraAtual = obras[selectedIndex]
         
         ScrollView{
-            Image(uiImage: UIImage(data: obraAtual.imgObra ?? Data()) ?? UIImage(systemName: "photo")!)
+            Image(uiImage: UIImage(data: obraAtual.imgArt ?? Data()) ?? UIImage(systemName: "photo")!)
                 .resizable()
                 .scaledToFit()
                 .overlay(alignment:.bottomLeading){
                     VStack(alignment: .leading){
-                        Text(obraAtual.nameObra ?? "Desconhecido")
+                        Text(obraAtual.nameArt ?? "Desconhecido")
                             .font(.title.bold())
                         Text("Autor - Lugar - Ano")
                             .font(.body)
