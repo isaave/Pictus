@@ -20,7 +20,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		F3FCECEE302F97DA004E4273 /* Pictus */ = {
+		BA46F80130364DAB003CE5F2 /* Pictus */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Pictus;
 			sourceTree = "<group>";
@@ -51,7 +51,7 @@
 		F3FCECE3302F97DA004E4273 = {
 			isa = PBXGroup;
 			children = (
-				F3FCECEE302F97DA004E4273 /* Pictus */,
+				BA46F80130364DAB003CE5F2 /* Pictus */,
 				BA8F525030337B9200FCCE30 /* database */,
 				BA46F6D33034F135003CE5F2 /* Pictus.app */,
 			);
@@ -73,7 +73,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				F3FCECEE302F97DA004E4273 /* Pictus */,
+				BA46F80130364DAB003CE5F2 /* Pictus */,
 			);
 			name = Pictus;
 			packageProductDependencies = (

@@ -53,7 +53,6 @@ class CoreDataRelationshipViewModel: ObservableObject {
         }
     }
     
-    
     func addArt(obra: Obras){
         let newObra = ArtEntity(context: manager.context)
         
@@ -66,8 +65,14 @@ class CoreDataRelationshipViewModel: ObservableObject {
         newObra.origin = obra.origem
         newObra.ctxReleased = false
         saveData()
-
-        fetchObras()
+    }
+    
+    func addEmptyArt(){
+        let EmptyArt = ArtEntity(context: manager.context)
+        
+        EmptyArt.id = UUID()
+        EmptyArt.origin = "Minhas"
+        saveData()
     }
 
     func getAllOrigin() -> [String] {
@@ -96,6 +101,36 @@ class CoreDataRelationshipViewModel: ObservableObject {
         saveData()
     }
     
+    func editObra(name: String?,nameArt : String?, data: Date?, local: String?,img: Data?, uuid: UUID ) {
+        let busca: NSFetchRequest<ArtEntity> = ArtEntity.fetchRequest()
+        busca.predicate  = NSPredicate(format: "id == %@", uuid as CVarArg)
+        busca.fetchLimit = 1
+        
+        if let result = try? manager.context.fetch(busca).first {
+            result.nameArt = nameArt ?? result.nameArt
+            result.nameAuthor = name ?? result.nameAuthor
+            result.dateArt = data ?? result.dateArt
+            result.local = local ?? result.local
+            result.imgArt = img ?? result.imgArt
+            
+            saveData()
+        }
+    }
+    
+    func deleteArt(uuid: UUID){
+        let busca: NSFetchRequest<ArtEntity> = ArtEntity.fetchRequest()
+        busca.predicate  = NSPredicate(format: "id == %@", uuid as CVarArg)
+        busca.fetchLimit = 1
+
+        do {
+            if let result = try? manager.context.fetch(busca).first {
+                manager.context.delete(result)
+                saveData()
+            }
+        }
+    }
+    
+    // reflection
     //.....................................//
     
     func addReflection(rfx: String, obra: ArtEntity) {
@@ -109,6 +144,25 @@ class CoreDataRelationshipViewModel: ObservableObject {
        
     }
     
+    func addReflectionToID(rfx: String, obra: UUID) {
+        
+        let busca: NSFetchRequest<ArtEntity> = ArtEntity.fetchRequest()
+        busca.predicate  = NSPredicate(format: "id == %@", obra as CVarArg)
+        busca.fetchLimit = 1
+        
+        if let obra = try? manager.context.fetch(busca).first {
+            let newReflexao = ReflectionEntity(context: manager.context)
+            
+            newReflexao.textReflx = rfx
+            newReflexao.dateReflx = Date()
+            newReflexao.art = obra
+            
+            saveData()
+            
+        }
+       
+    }
+    
     func fetchReflexoesDaObra(obra: ArtEntity) -> [ReflectionEntity] {
         let request: NSFetchRequest<ReflectionEntity> = ReflectionEntity.fetchRequest()
         request.predicate = NSPredicate(format: "obra == %@", obra)
@@ -117,7 +171,7 @@ class CoreDataRelationshipViewModel: ObservableObject {
         return (try? manager.context.fetch(request)) ?? []
     }
     
-    
+    //album
     //...........................................//
  
     func addAlbuns(nome: String, obras: [ArtEntity]){
