@@ -1,25 +1,33 @@
+//
+//  AlbunsView.swift
+//  Pictus
+//
+//  Created by Pedro Henrique Hossaka Teruel on 17/08/26.
+//
+
 import SwiftUI
 
 struct AlbunsView: View {
     @Environment(\.dismiss) private var dismiss
     let columns = [GridItem(.flexible()), GridItem(.flexible())]
     @State var searchText = ""
-    let names = ["Grafite", "Realismo", "Pintura", "Barroco", "Retrato", "Pré-Historia", "Fauvismo"]
     
-    var filteredNames: [String] {
+    // Recebe a lista de álbuns vinda da tela anterior
+    let albuns: [MockAlbum]
+    
+    var filteredAlbuns: [MockAlbum] {
         if searchText.isEmpty {
-            return names
+            return albuns
         } else {
-            return names.filter { $0.localizedCaseInsensitiveContains(searchText) }
+            return albuns.filter { $0.name.localizedCaseInsensitiveContains(searchText) }
         }
     }
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 0) {
-                // Barra Superior Personalizada (Alinhada como na sua imagem)
+                // Barra Superior Personalizada
                 HStack {
-                    // Botão de Voltar personalizado
                     Button {
                         dismiss()
                     } label: {
@@ -34,14 +42,12 @@ struct AlbunsView: View {
                     
                     Spacer()
                     
-                    // Título Centralizado
                     Text("Álbuns")
                         .font(.system(size: 20, weight: .bold))
                         .foregroundColor(.primary)
                     
                     Spacer()
                     
-                    // Botão de Adicionar (BtnAdd)
                     BtnAdd(ButtonAction: {
                         print("Add clicado")
                     }, icon: "plus")
@@ -53,19 +59,27 @@ struct AlbunsView: View {
                 // Conteúdo com Scroll
                 ScrollView {
                     LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(filteredNames, id: \.self) { album in
-                            AlbumCover(albumName: album, coverWidth: 175, coverHeight: 210)
+                        ForEach(filteredAlbuns, id: \.name) { album in
+                            AlbumCover(albumName: album.name, coverWidth: 175, coverHeight: 210)
                         }
                     }
                     .padding(.top, 16)
                 }
                 .searchable(text: $searchText, prompt: "Buscar álbuns")
             }
-            .navigationBarHidden(true) // Oculta a barra nativa para usar apenas a nossa personalizada
+            .navigationBarHidden(true)
         }
     }
 }
 
 #Preview {
-    AlbunsView()
+    AlbunsView(albuns: [
+        MockAlbum(name: "Grafite", category: .discoveries),
+        MockAlbum(name: "Realismo", category: .discoveries),
+        MockAlbum(name: "Pintura", category: .discoveries),
+        MockAlbum(name: "Barroco", category: .discoveries),
+        MockAlbum(name: "Retrato", category: .discoveries),
+        MockAlbum(name: "Pré-Historia", category: .discoveries),
+        MockAlbum(name: "Fauvismo", category: .discoveries)
+    ])
 }

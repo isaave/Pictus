@@ -20,22 +20,23 @@ struct MockObra {
     let category: SegmentedClasses
 }
 
-struct MockAlbum {
+struct MockAlbum: Identifiable {
+    let id = UUID()
     let name: String
     let category: SegmentedClasses
 }
 
 struct CollectionView: View {
     @StateObject var viewModel: CoreDataRelationshipViewModel = CoreDataRelationshipViewModel()
-    @State private var selectedMode: SegmentedClasses = .all
-    @State private var searchText = ""
+    @State  var selectedMode: SegmentedClasses = .all
+    @State  var searchText = ""
     
     @AppStorage("selectedIndex") private var selectedIndex: Int = 0
     @AppStorage("hasDiscovered") private var hasDiscovered: Bool = false
     @AppStorage("lastRollDate") private var lastRollDate: String = ""
     
-    @State private var mostrarToast = false
-    @State private var irParaObraDoDia = false
+    @State  var mostrarToast = false
+    @State  var irParaObraDoDia = false
     
     let albums = [
         MockAlbum(name: "Grafite", category: .discoveries),
@@ -108,7 +109,6 @@ struct CollectionView: View {
     
     var body: some View {
         NavigationStack {
-            
             ZStack(alignment: .bottom) {
                 ScrollView {
                     VStack(spacing: 20) {
@@ -128,16 +128,14 @@ struct CollectionView: View {
                             .frame(width: 48, height: 48)
                         }
                         .padding(.horizontal)
-                        .padding(.top, -10)
-                        
+                        .padding(.top, 10)
                         
                         // Segmented Control
                         ArtSegmentedControl(selection: $selectedMode)
                             .padding(.horizontal)
                         
                         // Álbuns
-                        NavigationLink(destination: AlbunsView(searchText: "")) {
-                            HStack {
+                        NavigationLink(destination: AlbunsView(albuns: filteredAlbums)) {                            HStack {
                                 Text("Álbuns")
                                     .font(.system(size: 28, weight: .bold))
                                     .foregroundColor(.primary)
@@ -168,7 +166,6 @@ struct CollectionView: View {
                             Text("Obras")
                                 .font(.system(size: 28, weight: .bold))
                                 .foregroundColor(.primary)
-                                .padding(.horizontal, 2)
                             
                             Spacer()
                             
@@ -177,9 +174,7 @@ struct CollectionView: View {
                                 icon: "plus"
                             )
                             .frame(width: 40, height: 40)
-                            .padding(.horizontal, 9)
                         }
-                    
                         .padding(.top, 10)
                         .padding(.horizontal)
                         
@@ -217,9 +212,9 @@ struct CollectionView: View {
                             .padding(.horizontal)
                         }
                     }
-                    .padding(.bottom, 30)
+                    .padding(.bottom, 100) // Espaço extra para o toast flutuante
                 }
-//                .searchable(text: $searchText, prompt: "Buscar obras e álbuns")
+                .searchable(text: $searchText, prompt: "Buscar obras e álbuns")
                 
                 // Toast Feedback
                 if mostrarToast {
@@ -244,8 +239,6 @@ struct CollectionView: View {
                 verificarESortearObraDoDia()
             }
         }
-        .searchable(text: $searchText, prompt: "Buscar obras e álbuns")
-        .ignoresSafeArea()
     }
     
     // MARK: - Métodos Auxiliares
@@ -302,7 +295,6 @@ struct CollectionView: View {
         }
     }
 }
-   
 
 #Preview {
     CollectionView()
