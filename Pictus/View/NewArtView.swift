@@ -10,6 +10,8 @@ import PhotosUI
 import UIKit
 
 struct NewArtView: View {
+    @State private var upSheet = false
+    @State private var selectedAlbums: Set<UUID> = []
 
     @Environment(\.dismiss) private var dismiss
     
@@ -26,6 +28,7 @@ struct NewArtView: View {
 //        _ id: UUID
 //    ) -> Void
     
+    @State private var showConfirmationAlert: Bool = false
     
     @State private var nome = ""
     @State private var nomeAutor = ""
@@ -36,8 +39,9 @@ struct NewArtView: View {
     @State private var imageData: Data?
     @State private var imagePreview: UIImage?
 
-    @State private var isLoadingImage = false
-    @State private var showImageError = false
+    @State private var isLoadingImage: Bool = false
+    @State private var showImageError: Bool = false
+    @State private var isFill: Bool = false
 
     var body: some View {
         GeometryReader { geometry in
@@ -87,6 +91,7 @@ struct NewArtView: View {
                         dataCriacao: $dataCriacao,
                         local: $local
                     )
+                    
                     .padding()
                     
                     
@@ -102,7 +107,7 @@ struct NewArtView: View {
                             Text("Registrar Obra")
                                 .font(.body)
                                 .fontWeight(.medium)
-                                .foregroundStyle(Color.gray.opacity(0.8))
+                                .foregroundStyle(canSave ? Color.white : Color.gray.opacity(0.8))
                                 .padding(.horizontal, 30)
                                 .padding(.vertical)
                                 .background {
@@ -110,7 +115,7 @@ struct NewArtView: View {
                                         cornerRadius: 32,
                                         style: .continuous
                                     )
-                                    .fill(.clear)
+                                    .fill(canSave ? Color.accentColor : .clear)
                                     .glassEffect(
                                         .regular.interactive(),
                                         in: .rect(
@@ -118,9 +123,10 @@ struct NewArtView: View {
                                             style: .continuous
                                         )
                                     )
+                                    .opacity(isFill ? 1.0 : 0.6)
                                 }
                         }
-                        .disabled(!canSave)
+                        .disabled(!canSave || !isFill)
                         Spacer()
                     }.padding()
                     
@@ -128,15 +134,48 @@ struct NewArtView: View {
                 .background(Color(uiColor: .systemBackground))
                 .ignoresSafeArea(edges: .top)
                 .scrollDismissesKeyboard(.interactively)
+                .onAppear {
+                    isFill = !nome.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                }
+                .onChange(of: nome) { oldValue, newValue in
+                    isFill = !newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                }
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
-                            dismiss()
+                            upSheet.toggle()
                         } label: {
                             Image(systemName: "folder.fill.badge.plus")
                                 .fontWeight(.semibold)
                         }
                     }
+                    
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button {
+                            showConfirmationAlert = true
+//                            ConfirmationAlert(
+//                                title: "Atenção!",
+//                                message: "Você possui alterações que não foram salvas.",
+//                                question: "Deseja salvar as alterações?",
+//                                confirmTitle: "Sim",
+//                                cancelTitle: "Não",
+//                                onConfirm: {},
+//                                onCancel: {}
+//                            )
+                        } label: {
+                            Image(systemName: "chevron.backward")
+                                .fontWeight(.semibold)
+                        }
+                        .sheet(isPresented: $upSheet) {
+                            AlbumSelector(
+                                Vm: viewModel, selectedAlbums: $selectedAlbums, onConfirm: {
+                                    upSheet = false
+                                }
+                                
+                                )
+                        }
+                    }
+                    
                 }
                 .onChange(of: selectedPhoto) { newPhoto in
                     guard let newPhoto else { return }
@@ -154,6 +193,33 @@ struct NewArtView: View {
                     Text("Selecione outra imagem e tente novamente.")
                 }
             }
+            .overlay(
+                Group {
+                    if showConfirmationAlert {
+                        ZStack {
+                            Color.black.opacity(0.4)
+                                .ignoresSafeArea()
+                                .onTapGesture { showConfirmationAlert = false }
+
+                            ConfirmationAlert(
+                                title: "Atenção!",
+                                message: "Você possui alterações que não foram salvas.",
+                                question: "Deseja salvar as alterações?",
+                                confirmTitle: "Salvar",
+                                cancelTitle: "Descartar",
+                                onConfirm: {
+                                    save()
+                                    showConfirmationAlert = false
+                                },
+                                onCancel: {
+                                    discart()
+                                    showConfirmationAlert = false
+                                }
+                            )
+                        }
+                    }
+                }
+            )
         }
     }
 }
@@ -186,8 +252,9 @@ private extension NewArtView {
 private extension NewArtView {
 
     var canSave: Bool {
-        imageData != nil && !isLoadingImage
+        imageData != nil && !isLoadingImage && isFill
     }
+
     
 //    private func save() {
 //        onSave(
@@ -213,6 +280,12 @@ private extension NewArtView {
         )
 
         dismiss()
+    }
+    
+    private func discart() {
+        viewModel.deleteArt(
+            uuid: obraID
+            )
     }
     
     
