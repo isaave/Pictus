@@ -70,14 +70,16 @@ class CoreDataRelationshipViewModel: ObservableObject {
         saveData()
     }
     
-    func addEmptyArt() -> UUID{
-        let EmptyArt = ArtEntity(context: manager.context)
+    func addEmptyArt() -> UUID {
+        let emptyArt = ArtEntity(context: manager.context)
         
-        EmptyArt.id = UUID()
-        EmptyArt.origin = "Minhas"
+        let id = UUID()
+        emptyArt.id = id
+        emptyArt.origin = "Minhas"
+        emptyArt.dateArt = Date()
+        
         saveData()
-        
-        return EmptyArt.id!
+        return id
     }
 
     func getAllOrigin() -> [String] {

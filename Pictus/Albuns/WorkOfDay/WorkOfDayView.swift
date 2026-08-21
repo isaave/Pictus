@@ -8,6 +8,14 @@
 import SwiftUI
 import CoreData
 
+//
+//  WorkOfDay.swift
+//  Pictus
+//
+
+import SwiftUI
+import CoreData
+
 struct WorkOfDay: View {
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject private var viewModel = CoreDataRelationshipViewModel()
@@ -16,15 +24,17 @@ struct WorkOfDay: View {
         sortDescriptors: [NSSortDescriptor(keyPath: \ArtEntity.dateArt, ascending: false)]
     )
     var obras: FetchedResults<ArtEntity>
-   
-    @AppStorage("selectedIndex") private var selectedIndex: Int = 0
+    
+    // Lê o UUID salvo da obra sorteada
+    @AppStorage("idObraDoDia") private var idObraDoDia: String = ""
     
     private var obraSelecionada: ArtEntity? {
-        guard !obras.isEmpty else { return nil }
-        if obras.indices.contains(selectedIndex) {
-            return obras[selectedIndex]
+        if let uuid = UUID(uuidString: idObraDoDia),
+           let obraDoDia = obras.first(where: { $0.id == uuid }) {
+            return obraDoDia
         }
-        return obras.first
+        // Fallback para a primeira obra com origem 'Descobertas'
+        return obras.first(where: { $0.origin == "Descobertas" }) ?? obras.first
     }
     
     var body: some View {
@@ -51,7 +61,6 @@ struct WorkOfDay: View {
         .ignoresSafeArea(edges: .top)
     }
 }
-
 struct WorkOfDayContentView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.managedObjectContext) private var viewContext
@@ -62,8 +71,14 @@ struct WorkOfDayContentView: View {
     @AppStorage("alreadyOpenedAlert") private var alreadyOpenedAlert: Bool = false
     @State private var showAlert = false
     @State private var reflexoesSalvas: [ReflectionEntity] = []
-    
+   
     var body: some View {
+        
+        let autor = obraAtual.nameAuthor ?? "Desconhecido"
+        let local = obraAtual.local ?? ""
+        let ano = obraAtual.dateArt?.formatted(.dateTime.year()) ?? ""
+        
+        
         ScrollView {
             VStack(spacing: 16) {
                 // Imagem
@@ -73,8 +88,9 @@ struct WorkOfDayContentView: View {
                     .overlay(alignment: .bottomLeading) {
                         VStack(alignment: .leading) {
                             Text(obraAtual.nameArt ?? "Desconhecido")
+                                .foregroundStyle(.white)
                                 .font(.title.bold())
-                            Text("Autor - Lugar - Ano")
+                            Text("\(autor) - \(local) - \(ano)")
                                 .font(.body)
                                 .foregroundStyle(.white)
                         }
@@ -127,10 +143,8 @@ struct WorkOfDayContentView: View {
                         .padding(.top, 4)
                     }
                     
-                    // Card para criar nova reflexão
                     ReflectionCard(obraAtual: obraAtual, viewModel: viewModel)
                     
-                    // Lista de reflexões já registradas para esta obra
                     if !reflexoesSalvas.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Minhas Reflexões")
@@ -160,7 +174,9 @@ struct WorkOfDayContentView: View {
                 }
                 .padding(16)
             }
+            .navigationTitle("\(obraAtual.nameArt ?? "Desconhecido")")
         }
+        .ignoresSafeArea()
         .onAppear {
             carregarReflexoes()
         }

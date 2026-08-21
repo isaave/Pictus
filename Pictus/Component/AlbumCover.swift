@@ -17,7 +17,7 @@ struct AlbumCover: View {
             .scaledToFill()
             .frame(width: coverWidth, height: coverHeight)
             .cornerRadius(10)
-            .clipped()   // ← impede a sombra/blur de vazar pra fora do card
+            .clipped()  
             .overlay(
                 Rectangle()
                     .frame(width: coverWidth, height: coverHeight * 0.24)

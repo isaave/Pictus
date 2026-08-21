@@ -19,8 +19,6 @@ struct MockAlbum {
     let category: SegmentedClasses
 }
 
-
-
 // MARK: - View Principal
 
 struct CollectionView: View {
@@ -40,9 +38,12 @@ struct CollectionView: View {
     @AppStorage("lastRollDate") private var lastRollDate: String = ""
     @AppStorage("obrasSorteadasHistorico") private var obrasSorteadasHistorico: String = ""
     
-    @State private var mostrarToast = false
-    @State private var irParaObraDoDia = false
-    @State private var isLoading = false // Controla a substituição da tela pela LoadingView
+    // MARK: - Controle de Onboarding e Carregamento
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
+    @State private var mostrarOnboarding: Bool = false
+    @State private var isLoading: Bool = false
+    @State private var mostrarToast: Bool = false
+    @State private var irParaObraDoDia: Bool = false
     @State private var idNovaArteParaEditar: UUID? = nil
     
     let catalog = ObrasObjects().objects
@@ -113,13 +114,8 @@ struct CollectionView: View {
     // MARK: - Interface Visual
     
     var body: some View {
-        
-        // Fica salvo no dispositivo: só é `false` (então o sheet só abre) na
-        // primeiríssima vez que o app roda.
-        @AppStorage("hasSeenOnboarding")  var hasSeenOnboarding: Bool = false
-        @State  var mostrarOnboarding = true
         Group {
-            // 🟢 Troca direta de tela: exibe a LoadingView enquanto carrega
+            // Troca direta de tela: exibe a LoadingView enquanto carrega
             if isLoading {
                 LoadingView()
                     .transition(.opacity)
@@ -277,116 +273,118 @@ struct CollectionView: View {
                 .searchable(text: $searchText, prompt: "Buscar obras e álbuns")
             }
         }
-        if !hasSeenOnboarding {
-                            mostrarOnboarding = true
-                        }
-                    }
-                }
-                
-                .sheet(isPresented: $mostrarOnboarding) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        HStack {
-                            Spacer()
-                            Image("Icone")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 124, height: 124)
-                                .cornerRadius(22)
-                                .shadow(color: .black.opacity(0.10), radius: 15, x: 5, y: 10)
-                            Spacer()
-                        }
-                        .padding(.top, 55)
-                        .padding(.bottom, 24)
-                        
-                       
-                        VStack(alignment: .leading, spacing: 14) {
-                            Text("Conheça o")
-                                .font(.system(size: 28, weight: .bold))
-                                .foregroundColor(Color("AccentColor"))
-                            
-                            Text("Pictus")
-                                .font(.system(size: 34, weight: .bold))
-                                .foregroundColor(.primary)
-                        }
-                        .padding(.horizontal, 54)
-                        .padding(.bottom, 32)
-                        
-                        VStack(alignment: .leading, spacing: 24) {
-                            HStack(alignment: .top, spacing: 1) {
-                                Image(systemName: "lightbulb.max.fill")
-                                    .font(.system(size: 24))
-                                    .foregroundColor(.accentColor)
-                                    .frame(width: 32)
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Reflita sobre arte")
-                                        .font(.system(size: 17, weight: .semibold))
-                                        .foregroundColor(.primary)
-                                    Text("Forme sua própria interpretação sobre as obras diárias e seus próprios registros.")
-                                        .font(.system(size: 17))
-                                        .foregroundColor(.secondary)
-                                }
-                                .padding(.horizontal, 30)
-
-                            }
-                            
-                            HStack(alignment: .top, spacing: 1) {
-                                Image(systemName: "photo.badge.magnifyingglass")
-                                    .font(.system(size: 24))
-                                    .foregroundColor(.accentColor)
-                                    .frame(width: 32)
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Descubra todos os dias")
-                                        .font(.system(size: 17, weight: .semibold))
-                                        .foregroundColor(.primary)
-                                    Text("Receba uma nova obra diariamente e conheça diferentes formas de enxergar a arte.")
-                                        .font(.system(size: 15))
-                                        .foregroundColor(.secondary)
-                                }
-                                .padding(.horizontal, 30)
-
-                            }
-                            
-                            HStack(alignment: .top, spacing: 1) {
-                                Image(systemName: "camera.fill")
-                                    .font(.system(size: 24))
-                                    .foregroundColor(.accentColor)
-                                    .frame(width: 32)
-                                
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text("Encontre arte ao seu redor")
-                                        .font(.system(size: 17, weight: .semibold))
-                                        .foregroundColor(.primary)
-                                    Text("Fotografe aquilo que você considera arte e reflita sobre isso.")
-                                        .font(.system(size: 15))
-                                        .foregroundColor(.secondary)
-                                    
-                                }
-                                .padding(.horizontal, 30)
-                            }
-                        }
-                        .padding(.horizontal, 52)
-                        
-                        
-                        Spacer()
-                        
-                        Button {
-                            hasSeenOnboarding = true
-                            mostrarOnboarding = false
-                        } label: {
-                            Text("Continuar")
-                                .font(.system(size: 20, weight: .semibold))
-                                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 14)
-                                .background(Color.accentColor)
-                                .clipShape(.rect(cornerRadius: 55, style: .continuous))
-                                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 55, style: .continuous))
-                        }
-                        .padding(.horizontal, 24)
+        .onAppear {
+            if !hasSeenOnboarding {
+                mostrarOnboarding = true
+            }
+        }
+        .sheet(isPresented: $mostrarOnboarding) {
+            onboardingView
+        }
     }
         
+    // MARK: - View de Onboarding
+    
+    private var onboardingView: some View {
+        VStack(alignment: .leading, spacing: 0) {
+            HStack {
+                Spacer()
+                Image("Icone")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 124, height: 124)
+                    .cornerRadius(22)
+                    .shadow(color: .black.opacity(0.10), radius: 15, x: 5, y: 10)
+                Spacer()
+            }
+            .padding(.top, 55)
+            .padding(.bottom, 24)
+            
+            VStack(alignment: .leading, spacing: 14) {
+                Text("Conheça o")
+                    .font(.system(size: 28, weight: .bold))
+                    .foregroundColor(Color("AccentColor"))
+                
+                Text("Pictus")
+                    .font(.system(size: 34, weight: .bold))
+                    .foregroundColor(.primary)
+            }
+            .padding(.horizontal, 54)
+            .padding(.bottom, 32)
+            
+            VStack(alignment: .leading, spacing: 24) {
+                HStack(alignment: .top, spacing: 1) {
+                    Image(systemName: "lightbulb.max.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(.accentColor)
+                        .frame(width: 32)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Reflita sobre arte")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.primary)
+                        Text("Forme sua própria interpretação sobre as obras diárias e seus próprios registros.")
+                            .font(.system(size: 17))
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.horizontal, 30)
+                }
+                
+                HStack(alignment: .top, spacing: 1) {
+                    Image(systemName: "photo.badge.magnifyingglass")
+                        .font(.system(size: 24))
+                        .foregroundColor(.accentColor)
+                        .frame(width: 32)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Descubra todos os dias")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.primary)
+                        Text("Receba uma nova obra diariamente e conheça diferentes formas de enxergar a arte.")
+                            .font(.system(size: 15))
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.horizontal, 30)
+                }
+                
+                HStack(alignment: .top, spacing: 1) {
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 24))
+                        .foregroundColor(.accentColor)
+                        .frame(width: 32)
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Encontre arte ao seu redor")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.primary)
+                        Text("Fotografe aquilo que você considera arte e reflita sobre isso.")
+                            .font(.system(size: 15))
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.horizontal, 30)
+                }
+            }
+            .padding(.horizontal, 52)
+            
+            Spacer()
+            
+            Button {
+                hasSeenOnboarding = true
+                mostrarOnboarding = false
+            } label: {
+                Text("Continuar")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 14)
+                    .background(Color.accentColor)
+                    .clipShape(.rect(cornerRadius: 55, style: .continuous))
+            }
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24)
+        }
+    }
+
     // MARK: - Regras de Negócio
     
     private func tratarCliqueDescoberta() {
@@ -405,7 +403,6 @@ struct CollectionView: View {
                     lastRollDate = hojeString
                 }
                 
-                // Pequena pausa para garantir a conclusão da escrita e permitir ver a animação do carregamento
                 try? await Task.sleep(nanoseconds: 500_000_000)
                 
                 withAnimation(.easeInOut(duration: 0.25)) {
