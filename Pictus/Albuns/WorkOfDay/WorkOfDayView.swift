@@ -45,9 +45,9 @@ struct WorkOfDay: View {
                             VStack(alignment: .leading) {
                                 Text(obraAtual.nameArt ?? "Desconhecido")
                                     .font(.title.bold())
-                                Text("Autor - Lugar - Ano")
-                                    .font(.body)
-                                    .foregroundStyle(.white)
+//                                Text("\(obraAtual.nameAuthor ?? "Desconhecido") - \(obraAtual.)")
+//                                    .font(.body)
+//                                    .foregroundStyle(.white)
                             }
                             .padding(16)
                         }
