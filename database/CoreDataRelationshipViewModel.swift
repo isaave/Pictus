@@ -12,14 +12,18 @@ import CoreData
 import SwiftData
 import Foundation
 
+
+
 class CoreDataRelationshipViewModel: ObservableObject {
     let manager = CoreDataManage.instance
   
     @Published var obrasEntities: [ArtEntity] = []
+    @Published var albunsEntities: [AlbumEntity] = []
 
     init() {
         seedObrasIfNeeded()
         fetchObras()
+        fetchAlbuns()  
     }
     
     func seedObrasIfNeeded() {
@@ -206,6 +210,25 @@ class CoreDataRelationshipViewModel: ObservableObject {
         saveData()
     }
     
+    func addObraToAlbuns(idAlbuns: [UUID], novaObra: ArtEntity) {
+        let request: NSFetchRequest<AlbumEntity> = AlbumEntity.fetchRequest()
+        request.predicate = NSPredicate(format: "idAlbum IN %@", idAlbuns)
+
+        do {
+            let albuns = try manager.context.fetch(request)
+
+            for album in albuns {
+                album.addToArt(novaObra)
+            }
+
+            try manager.context.save()
+            print("Obra adicionada a \(albuns.count) álbum(s)")
+        } catch {
+            print("Erro ao adicionar obra: \(error.localizedDescription)")
+        }
+    }
+    
+    
     func deleteAlbun(id: UUID) {
         let request: NSFetchRequest<AlbumEntity> = AlbumEntity.fetchRequest()
         request.predicate = NSPredicate(format: "id == %@", id as CVarArg)
@@ -222,12 +245,55 @@ class CoreDataRelationshipViewModel: ObservableObject {
         }
     }
     
+    func fetchAlbuns() {
+        let request: NSFetchRequest<AlbumEntity> = AlbumEntity.fetchRequest()
+        do{
+            albunsEntities = try manager.context.fetch(request)
+        }catch let error {
+            print("erro au subir uma nova obra\(error.localizedDescription)")
+        }
+    }
     
     
     
     func saveData() {
         manager.save()
         fetchObras()
+        fetchAlbuns()
     }
-}
+    
+    
+    
+    
+    //testes dados ficticios
+    func adicionarAlbunsTeste() {
+           let albunsTeste: [(String, String)] = [
+               ("Natureza", "mountain.2.fill"),
+               ("Retratos", "person.fill"),
+               ("Urbano", "building.2.fill"),
+               ("Viagens", "airplane.fill")
+           ]
 
+           for (nome, symbol) in albunsTeste {
+               let album = AlbumEntity(context: manager.context) // ✅ context direto da ViewModel
+               album.idAlbum = UUID()
+               album.nameAlbum = nome
+
+               let config = UIImage.SymbolConfiguration(pointSize: 200, weight: .regular)
+               if let uiImage = UIImage(systemName: symbol, withConfiguration: config),
+                  let data = uiImage.jpegData(compressionQuality: 0.8) {
+                   album.imgAlbum = data
+               }
+               album.art = NSSet()
+           }
+
+           do {
+               try manager.context.save()
+               fetchAlbuns() // ✅ já está na ViewModel
+               print("✅ 4 álbuns de teste criados")
+           } catch {
+               print("❌ Erro: \(error.localizedDescription)")
+           }
+        saveData()
+       }
+   }
