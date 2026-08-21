@@ -10,10 +10,12 @@ import SwiftUI
 @main
 struct PictusApp: App {
     let coreDataManager = CoreDataManage.instance
+    @StateObject private var Vm = CoreDataRelationshipViewModel()
     var body: some Scene {
         WindowGroup {
             CollectionView()
                 .environment(\.managedObjectContext, coreDataManager.context)
+                .environmentObject(Vm)
         }
     }
 }
