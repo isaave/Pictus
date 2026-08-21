@@ -36,6 +36,8 @@ struct CollectionView: View {
     @State private var mostrarToast = false
     @State private var irParaObraDoDia = false
     
+    @State private var idNovaArteParaEditar: UUID? = nil
+    
     let catalog = ObrasObjects().objects
     
     let albums = [
@@ -158,8 +160,12 @@ struct CollectionView: View {
                             
                             Spacer()
                             
+                            // Botão de adicionar nova obra
                             BtnAdd(
-                                ButtonAction: { print("Add") },
+                                ButtonAction: {
+                                    let idArteVazia = viewModel.addEmptyArt()
+                                    idNovaArteParaEditar = idArteVazia
+                                },
                                 icon: "plus"
                             )
                             .frame(width: 40, height: 40)
@@ -192,11 +198,12 @@ struct CollectionView: View {
                         } else {
                             LazyVGrid(columns: obrasColumns, spacing: 12) {
                                 ForEach(filteredObras, id: \.objectID) { obra in
-                                    NavigationLink(destination: WorkOfDayContentView(obraAtual: obra, viewModel: viewModel)) {
+                                    NavigationLink(value: obra) {
                                         ArtPreview(
                                             artName: obra.nameArt ?? "Sem Título",
-                                            authorName: obra.local ?? "Desconhecido",
-                                            dateArt: obra.dateArt?.formatted(date: .numeric, time: .omitted) ?? ""
+                                            authorName: obra.nameAuthor ?? obra.local ?? "Desconhecido",
+                                            dateArt: obra.dateArt?.formatted(date: .numeric, time: .omitted) ?? "",
+                                            imgData: obra.imgArt
                                         )
                                     }
                                     .buttonStyle(.plain)
@@ -222,8 +229,17 @@ struct CollectionView: View {
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                 }
             }
+            .navigationDestination(for: ArtEntity.self) { obraClicada in
+                WorkOfDayContentView(obraAtual: obraClicada, viewModel: viewModel)
+            }
             .navigationDestination(isPresented: $irParaObraDoDia) {
                 WorkOfDay()
+            }
+            .sheet(item: Binding(
+                get: { idNovaArteParaEditar.map { IdentifiableUUID(id: $0) } },
+                set: { idNovaArteParaEditar = $0?.id }
+            )) { item in
+                NewArtView(viewModel: viewModel, obraID: item.id)
             }
         }
         .searchable(text: $searchText, prompt: "Buscar obras e álbuns")
@@ -236,7 +252,6 @@ struct CollectionView: View {
         if lastRollDate == hojeString && hasDiscovered {
             exibirToast()
         } else {
-            // Sorteia e salva no Core Data APENAS no momento do clique
             if lastRollDate != hojeString {
                 sortearESalvarObraNoCoreData()
                 lastRollDate = hojeString
@@ -251,10 +266,8 @@ struct CollectionView: View {
         let sorteado = Int.random(in: 0..<catalog.count)
         let obraObjeto = catalog[sorteado]
         
-        // 1. Salva a nova obra no banco Core Data
         viewModel.addArt(obra: obraObjeto)
         
-        // 2. Aponta para a última obra adicionada no banco
         if !obrasEntities.isEmpty {
             selectedIndex = 0
         }
@@ -271,6 +284,11 @@ struct CollectionView: View {
             }
         }
     }
+}
+
+// Wrapper para tornar o UUID compatível com .sheet(item:)
+struct IdentifiableUUID: Identifiable {
+    let id: UUID
 }
 
 #Preview {

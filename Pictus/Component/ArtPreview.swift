@@ -8,15 +8,33 @@
 import SwiftUI
 
 struct ArtPreview: View {
-    @State var artName: String
-    @State var authorName: String
-    @State var dateArt: String
+    let artName: String
+    let authorName: String
+    let dateArt: String
+    let imgData: Data?
+
+    private var uiImage: UIImage? {
+        guard let data = imgData else { return nil }
+        return UIImage(data: data)
+    }
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            Image("ArtCover")
-                .resizable()
-                .scaledToFill()
+            if let uiImage {
+                Image(uiImage: uiImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 174, height: 228)
+                    .clipped()
+            } else {
+                ZStack {
+                    Color.gray.opacity(0.3)
+                    Image(systemName: "photo")
+                        .font(.title)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(width: 174, height: 228)
+            }
 
             LinearGradient(
                 colors: [
@@ -27,13 +45,15 @@ struct ArtPreview: View {
                 endPoint: .bottom
             )
 
-            VStack(alignment: .leading) {
+            VStack(alignment: .leading, spacing: 4) {
                 Text(artName)
                     .font(.title3)
                     .fontWeight(.bold)
+                    .lineLimit(1)
 
                 Text("\(authorName) – \(dateArt)")
                     .font(.subheadline)
+                    .lineLimit(1)
             }
             .foregroundStyle(.white)
             .padding(14)
@@ -41,12 +61,4 @@ struct ArtPreview: View {
         .frame(width: 174, height: 228)
         .cornerRadius(12)
     }
-}
-
-#Preview {
-    ArtPreview(
-        artName: "Stańczyk",
-        authorName: "Jan Matejko",
-        dateArt: "1862"
-    )
 }

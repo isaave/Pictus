@@ -34,63 +34,8 @@ struct WorkOfDay: View {
                     "Nenhuma obra encontrada",
                     systemImage: "photo.on.rectangle.angled"
                 )
-            } else if obras.indices.contains(selectedIndex) {
-                let obraAtual = obras[selectedIndex]
-                
-                ScrollView {
-                    Image(uiImage: UIImage(data: obraAtual.imgArt ?? Data()) ?? UIImage(systemName: "photo")!)
-                        .resizable()
-                        .scaledToFit()
-                        .overlay(alignment: .bottomLeading) {
-                            VStack(alignment: .leading) {
-                                Text(obraAtual.nameArt ?? "Desconhecido")
-                                    .font(.title.bold())
-//                                Text("\(obraAtual.nameAuthor ?? "Desconhecido") - \(obraAtual.)")
-//                                    .font(.body)
-//                                    .foregroundStyle(.white)
-                            }
-                            .padding(16)
-                        }
-                    
-                    VStack(alignment: .leading, spacing: 16) {
-                        Text("Sobre a obra")
-                            .font(.title2.bold())
-                        
-                        Text(obraAtual.ctxArt ?? "Conteúdo da arte")
-                            .font(.body)
-                            .overlay(
-                                Rectangle()
-                                
-                                    .frame(maxWidth: .infinity,maxHeight: 50)
-                                    .blur(radius: 10,)
-                                
-                            )
-                        
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text("Hora de Refletir")
-                                .font(.title3.bold())
-                            
-                            Text("Pensou em algo novo?")
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                            
-                            Divider()
-                            
-                            Toggle("Quero Ajuda", isOn: $toggleAtivo)
-                                .tint(.accentColor)
-                        }
-                        .padding(16)
-                    }
-                    .padding(16)
-                    
-                    Button {
-                        hasDiscovered.toggle()
-                    } label: {
-                        Text("Adicionar Reflexão")
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .padding(.bottom, 20)
-                }
+            } else if let obra = obraSelecionada {
+                WorkOfDayContentView(obraAtual: obra, viewModel: viewModel)
             } else {
                 ProgressView("Carregando obra...")
             }
@@ -98,10 +43,9 @@ struct WorkOfDay: View {
         .navigationTitle("Obra do dia")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button{
-                }label: {
-                    Image(systemName: "ellipsis")
-                }
+                BtnAdd(ButtonAction: {
+                    print("Add")
+                }, icon: "ellipsis")
             }
         }
         .ignoresSafeArea(edges: .top)
@@ -183,7 +127,10 @@ struct WorkOfDayContentView: View {
                         .padding(.top, 4)
                     }
                     
+                    // Card para criar nova reflexão
                     ReflectionCard(obraAtual: obraAtual, viewModel: viewModel)
+                    
+                    // Lista de reflexões já registradas para esta obra
                     if !reflexoesSalvas.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Minhas Reflexões")
