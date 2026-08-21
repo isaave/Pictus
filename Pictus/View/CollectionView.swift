@@ -170,7 +170,10 @@ struct CollectionView: View {
                             Spacer()
                             
                             BtnAdd(
-                                ButtonAction: { print("Add") },
+                                ButtonAction: {
+                                    let idArteVazia = viewModel.addEmptyArt()
+                                    NewArtView(viewModel: viewModel, obraID: idArteVazia)
+                                },
                                 icon: "plus"
                             )
                             .frame(width: 40, height: 40)
