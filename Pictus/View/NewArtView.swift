@@ -162,6 +162,8 @@ struct NewArtView: View {
 //                                onConfirm: {},
 //                                onCancel: {}
 //                            )
+                            
+//
                         } label: {
                             Image(systemName: "chevron.backward")
                                 .fontWeight(.semibold)
