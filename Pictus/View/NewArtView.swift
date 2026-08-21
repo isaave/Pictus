@@ -66,11 +66,11 @@ struct NewArtView: View {
                 NewArtInfo()
                     .padding()
                 
-                
-                ReflectionCard()
-                    .padding(.horizontal)
-                    .padding(.top, 10)
-                    .frame(minHeight: 520)
+//                
+//                ReflectionCard()
+//                    .padding(.horizontal)
+//                    .padding(.top, 10)
+//                    .frame(minHeight: 520)
             }
             .background(Color(uiColor: .systemBackground))
             .ignoresSafeArea(edges: .top)

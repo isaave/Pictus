@@ -8,38 +8,59 @@
 import SwiftUI
 
 struct ReflectionCard: View {
+    @ObservedObject var obraAtual: ArtEntity
+    @ObservedObject var viewModel: CoreDataRelationshipViewModel
     
     @State private var reflection = ""
     @State private var wantsHelp: Bool = false
+    @State private var selectedIndexes: [Int] = [0, 1, 2]
+    
+    @AppStorage("hasDiscovered") private var hasDiscovered: Bool = false
+    @AppStorage("lastRollDate") private var lastRollDate: String = ""
+    @Environment(\.dismiss) private var dismiss
+    
+    let questions = QuestionsClass()
     
     var body: some View {
-        VStack{
-            VStack(alignment: .leading, spacing: 16){
+        VStack {
+            VStack(alignment: .leading, spacing: 16) {
                 Text("Hora de Refletir")
                     .font(.title3)
                     .fontWeight(.semibold)
+                
                 Divider()
-                HStack{
+                
+                HStack {
                     Text("Quero Ajuda")
                         .font(.body)
                     Spacer()
                     Toggle("", isOn: $wantsHelp)
                 }
                 
-                if wantsHelp{
-                    VStack{
-                        Text("1.")
-                        Text("2.")
-                        Text("3.")
-                        HStack{
+                if wantsHelp {
+                    VStack(alignment: .leading, spacing: 8) {
+                        if selectedIndexes.count >= 3 {
+                            Text("1. \(questions.questions[selectedIndexes[0]])")
+                            Text("2. \(questions.questions[selectedIndexes[1]])")
+                            Text("3. \(questions.questions[selectedIndexes[2]])")
+                        }
+                        
+                        HStack {
                             Spacer()
-                            Image(systemName: "arrow.clockwise")
-                                .font(.title2)
+                            Button {
+                                withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                                    sortearNovosIndices()
+                                }
+                            } label: {
+                                Image(systemName: "arrow.clockwise")
+                                    .font(.title2)
+                            }
                         }
                     }
                 }
                 
                 Divider()
+                
                 TextField(
                     "",
                     text: $reflection,
@@ -48,41 +69,55 @@ struct ReflectionCard: View {
                         .foregroundStyle(.placeholder)
                         .fontWeight(.semibold)
                 )
-                Spacer()
-
+                .padding(.vertical, 8)
+                
                 HStack {
                     Spacer()
                     Button {
+                        let textoReflexao = reflection.trimmingCharacters(in: .whitespacesAndNewlines)
+                        
+                        // 1. Salva no Core Data se houver texto digitado
+                        if !textoReflexao.isEmpty {
+                            viewModel.addReflection(rfx: textoReflexao, obra: obraAtual)
+                        }
+                        
+                        // 2. Atualiza estado e envia dismiss
+                        hasDiscovered = true
+                        lastRollDate = Date().formatted(date: .numeric, time: .omitted)
+                        dismiss()
                     } label: {
                         Text("Adicionar Reflexão")
                             .font(.body)
                             .fontWeight(.medium)
-                            .foregroundStyle(
-                                Color.gray.opacity(0.8)
-                            )
+                            .foregroundStyle(Color.primary)
                             .padding(.horizontal, 30)
-                            .padding(.vertical)
+                            .padding(.vertical, 12)
                             .background {
                                 RoundedRectangle(cornerRadius: 32, style: .continuous)
-                                    .fill(.clear)
-                                    .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 32, style: .continuous))
+                                    .fill(Color.accentColor.opacity(0.15))
                             }
                     }
                     Spacer()
-                }.padding()
+                }
+                .padding(.top, 8)
             }
             .padding()
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
         .background {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .fill(.gray.opacity(0.2))
-                .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 16, style: .continuous))
+                .fill(.gray.opacity(0.12))
         }
-
+        .onAppear {
+            sortearNovosIndices()
+        }
     }
-}
-
-#Preview {
-    ReflectionCard()
+    
+    private func sortearNovosIndices() {
+        guard questions.questions.count >= 3 else { return }
+        let indicesAleatorios = Array(questions.questions.indices)
+            .shuffled()
+            .prefix(3)
+        selectedIndexes = Array(indicesAleatorios)
+    }
 }

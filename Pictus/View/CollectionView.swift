@@ -2,22 +2,14 @@
 //  CollectionView.swift
 //  Pictus
 //
-//  Created by Pedro Henrique Hossaka Teruel on 17/08/26.
-//
 
 import SwiftUI
+import CoreData
 
 enum SegmentedClasses: String, CaseIterable {
     case all = "Todos"
     case discoveries = "Descobertas"
     case personal = "Minhas"
-}
-
-struct MockObra {
-    let name: String
-    let author: String
-    let date: String
-    let category: SegmentedClasses
 }
 
 struct MockAlbum {
@@ -26,7 +18,14 @@ struct MockAlbum {
 }
 
 struct CollectionView: View {
+    @Environment(\.managedObjectContext) private var viewContext
     @StateObject var viewModel: CoreDataRelationshipViewModel = CoreDataRelationshipViewModel()
+    
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \ArtEntity.dateArt, ascending: false)]
+    )
+    private var obrasEntities: FetchedResults<ArtEntity>
+    
     @State private var selectedMode: SegmentedClasses = .all
     @State private var searchText = ""
     
@@ -37,6 +36,8 @@ struct CollectionView: View {
     @State private var mostrarToast = false
     @State private var irParaObraDoDia = false
     
+    let catalog = ObrasObjects().objects
+    
     let albums = [
         MockAlbum(name: "Grafite", category: .discoveries),
         MockAlbum(name: "Realismo", category: .discoveries),
@@ -46,37 +47,29 @@ struct CollectionView: View {
         MockAlbum(name: "Meu Álbum", category: .personal)
     ]
     
-    let obras = [
-        MockObra(name: "Stańczyk", author: "Jan Matejko", date: "1862", category: .discoveries),
-        MockObra(name: "A Criação de Adão", author: "Michelangelo", date: "1511", category: .discoveries),
-        MockObra(name: "Fiel até a morte", author: "Edward Poynter", date: "1865", category: .discoveries),
-        MockObra(name: "O céu de Ataíde", author: "Mestre Ataíde", date: "1812", category: .discoveries),
-        MockObra(name: "Minha obra", author: "Minha coleção", date: "2026", category: .personal)
-    ]
-    
     let obrasColumns = [
         GridItem(.flexible()),
         GridItem(.flexible())
     ]
     
-    // MARK: - Filtros Computados
-    
-    var filteredObras: [MockObra] {
-        var result: [MockObra]
+    var filteredObras: [ArtEntity] {
+        var result = Array(obrasEntities)
         
         switch selectedMode {
         case .all:
-            result = obras
+            break
         case .discoveries:
-            result = obras.filter { $0.category == .discoveries }
+            result = result.filter { $0.origin == "Descobertas" }
         case .personal:
-            result = obras.filter { $0.category == .personal }
+            result = result.filter { $0.origin == "Minhas" }
         }
         
         if !searchText.isEmpty {
-            result = result.filter {
-                $0.name.localizedCaseInsensitiveContains(searchText) ||
-                $0.author.localizedCaseInsensitiveContains(searchText)
+            result = result.filter { obra in
+                let nome = obra.nameArt ?? ""
+                let local = obra.local ?? ""
+                return nome.localizedCaseInsensitiveContains(searchText) ||
+                       local.localizedCaseInsensitiveContains(searchText)
             }
         }
         
@@ -84,11 +77,11 @@ struct CollectionView: View {
     }
     
     var filteredAlbums: [MockAlbum] {
-        var result: [MockAlbum]
+        var result = albums
         
         switch selectedMode {
         case .all:
-            result = albums
+            break
         case .discoveries:
             result = albums.filter { $0.category == .discoveries }
         case .personal:
@@ -104,11 +97,8 @@ struct CollectionView: View {
         return result
     }
     
-    // MARK: - Body
-    
     var body: some View {
         NavigationStack {
-            
             ZStack(alignment: .bottom) {
                 ScrollView {
                     VStack(spacing: 20) {
@@ -130,12 +120,9 @@ struct CollectionView: View {
                         .padding(.horizontal)
                         .padding(.top, -10)
                         
-                        
-                        // Segmented Control
                         ArtSegmentedControl(selection: $selectedMode)
                             .padding(.horizontal)
                         
-                        // Álbuns
                         NavigationLink(destination: AlbunsView(searchText: "")) {
                             HStack {
                                 Text("Álbuns")
@@ -163,7 +150,6 @@ struct CollectionView: View {
                             .padding(.horizontal, 15)
                         }
                         
-                        // Obras
                         HStack {
                             Text("Obras")
                                 .font(.system(size: 28, weight: .bold))
@@ -179,7 +165,6 @@ struct CollectionView: View {
                             .frame(width: 40, height: 40)
                             .padding(.horizontal, 9)
                         }
-                    
                         .padding(.top, 10)
                         .padding(.horizontal)
                         
@@ -206,12 +191,15 @@ struct CollectionView: View {
                             .padding(.horizontal)
                         } else {
                             LazyVGrid(columns: obrasColumns, spacing: 12) {
-                                ForEach(filteredObras, id: \.name) { obra in
-                                    ArtPreview(
-                                        artName: obra.name,
-                                        authorName: obra.author,
-                                        dateArt: obra.date
-                                    )
+                                ForEach(filteredObras, id: \.objectID) { obra in
+                                    NavigationLink(destination: WorkOfDayContentView(obraAtual: obra, viewModel: viewModel)) {
+                                        ArtPreview(
+                                            artName: obra.nameArt ?? "Sem Título",
+                                            authorName: obra.local ?? "Desconhecido",
+                                            dateArt: obra.dateArt?.formatted(date: .numeric, time: .omitted) ?? ""
+                                        )
+                                    }
+                                    .buttonStyle(.plain)
                                 }
                             }
                             .padding(.horizontal)
@@ -219,9 +207,7 @@ struct CollectionView: View {
                     }
                     .padding(.bottom, 30)
                 }
-//                .searchable(text: $searchText, prompt: "Buscar obras e álbuns")
                 
-                // Toast Feedback
                 if mostrarToast {
                     Text("Você já abriu esta obra hoje, espere até amanhã!")
                         .font(.subheadline.weight(.medium))
@@ -239,70 +225,53 @@ struct CollectionView: View {
             .navigationDestination(isPresented: $irParaObraDoDia) {
                 WorkOfDay()
             }
-            .onAppear {
-                viewModel.seedObrasIfNeeded()
-                verificarESortearObraDoDia()
-            }
         }
         .searchable(text: $searchText, prompt: "Buscar obras e álbuns")
         .ignoresSafeArea()
     }
-    
-    // MARK: - Métodos Auxiliares
-    
+        
     private func tratarCliqueDescoberta() {
         let hojeString = Date().formatted(date: .numeric, time: .omitted)
         
         if lastRollDate == hojeString && hasDiscovered {
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-                mostrarToast = true
-            }
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                withAnimation {
-                    mostrarToast = false
-                }
-            }
+            exibirToast()
         } else {
-            executarSorteio()
-            lastRollDate = hojeString
-            hasDiscovered = true
+            // Sorteia e salva no Core Data APENAS no momento do clique
+            if lastRollDate != hojeString {
+                sortearESalvarObraNoCoreData()
+                lastRollDate = hojeString
+            }
             irParaObraDoDia = true
         }
     }
     
-    private func verificarESortearObraDoDia() {
-        guard !obras.isEmpty else { return }
-        let hojeString = Date().formatted(date: .numeric, time: .omitted)
+    private func sortearESalvarObraNoCoreData() {
+        guard !catalog.isEmpty else { return }
         
-        if lastRollDate != hojeString {
-            hasDiscovered = false
-        }
+        let sorteado = Int.random(in: 0..<catalog.count)
+        let obraObjeto = catalog[sorteado]
         
-        if lastRollDate != hojeString || !obras.indices.contains(selectedIndex) {
-            executarSorteio()
-        }
-    }
-    
-    private func sortearNovaObraManual() {
-        guard !obras.isEmpty else { return }
-        executarSorteio()
-        lastRollDate = Date().formatted(date: .numeric, time: .omitted)
-    }
-    
-    private func executarSorteio() {
-        if obras.count > 1 {
-            var novoIndice = selectedIndex
-            while novoIndice == selectedIndex {
-                novoIndice = Int.random(in: 0..<obras.count)
-            }
-            selectedIndex = novoIndice
-        } else {
+        // 1. Salva a nova obra no banco Core Data
+        viewModel.addArt(obra: obraObjeto)
+        
+        // 2. Aponta para a última obra adicionada no banco
+        if !obrasEntities.isEmpty {
             selectedIndex = 0
         }
     }
+    
+    private func exibirToast() {
+        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+            mostrarToast = true
+        }
+        
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+            withAnimation {
+                mostrarToast = false
+            }
+        }
+    }
 }
-   
 
 #Preview {
     CollectionView()
