@@ -8,7 +8,7 @@
 
 import SwiftUI
 import Combine
-import CoreData
+internal import CoreData
 import SwiftData
 import Foundation
 

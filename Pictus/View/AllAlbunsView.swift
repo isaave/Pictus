@@ -13,6 +13,7 @@ struct AllAlbunsView: View {
     @EnvironmentObject var Vm: CoreDataRelationshipViewModel
     
     @State private var searchText = ""
+    @State private var mostrarAddAlbum = false
     
     let columns = [
         GridItem(.flexible()),
@@ -73,7 +74,7 @@ struct AllAlbunsView: View {
                     
                     BtnAdd(
                         ButtonAction: {
-                            print("Adicionar álbum")
+                            mostrarAddAlbum = true
                         },
                         icon: "plus"
                     )
@@ -145,6 +146,11 @@ struct AllAlbunsView: View {
                 )
             }
             .navigationBarHidden(true)
+            // ✅ Sheet para criar novo álbum
+            .sheet(isPresented: $mostrarAddAlbum) {
+                AddAlbumView()
+                    .environmentObject(Vm)
+            }
         }
     }
 }
@@ -155,15 +161,3 @@ struct AllAlbunsView: View {
             CoreDataRelationshipViewModel()
         )
 }
-
-
-//MEUS TESTES kkkkk nao consigo apagar mais os albuns
-//#Preview {
-//    
-//    let vm = CoreDataRelationshipViewModel()
-//    
-//    vm.adicionarAlbunsTeste()
-//    
-//    return AllAlbunsView()
-//        .environmentObject(vm)
-//}
