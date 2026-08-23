@@ -8,7 +8,7 @@
 
 import SwiftUI
 import Combine
-import CoreData
+internal import CoreData
 import SwiftData
 import Foundation
 
@@ -211,10 +211,19 @@ class CoreDataRelationshipViewModel: ObservableObject {
         saveData()
     }
     
-    func addObraToAlbuns(idAlbuns: [UUID], novaObra: ArtEntity) {
+    func addObraToAlbuns(idAlbuns: [UUID], idArt: UUID) {
         let request: NSFetchRequest<AlbumEntity> = AlbumEntity.fetchRequest()
         request.predicate = NSPredicate(format: "idAlbum IN %@", idAlbuns)
 
+        let requestObra: NSFetchRequest<ArtEntity> = ArtEntity.fetchRequest()
+        requestObra.predicate = NSPredicate(format: "id == %@", idArt as CVarArg)
+        requestObra.fetchLimit = 1
+        
+        guard let novaObra = try? manager.context.fetch(requestObra).first else {
+            print("Obra não encontrada: \(idArt)")
+            return
+        }
+        
         do {
             let albuns = try manager.context.fetch(request)
 
@@ -228,7 +237,6 @@ class CoreDataRelationshipViewModel: ObservableObject {
             print("Erro ao adicionar obra: \(error.localizedDescription)")
         }
     }
-    
     
     func deleteAlbun(id: UUID) {
         let request: NSFetchRequest<AlbumEntity> = AlbumEntity.fetchRequest()
@@ -257,7 +265,7 @@ class CoreDataRelationshipViewModel: ObservableObject {
     
     
     
-    func saveData() {
+   private func saveData() {
         manager.save()
         fetchObras()
         fetchAlbuns()

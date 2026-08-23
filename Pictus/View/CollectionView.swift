@@ -14,8 +14,10 @@ enum SegmentedClasses: String, CaseIterable {
     case personal = "Minhas"
 }
 
-struct MockAlbum {
+struct MockObra {
     let name: String
+    let author: String
+    let date: String
     let category: SegmentedClasses
 }
 
@@ -32,31 +34,20 @@ struct CollectionView: View {
     
     @State private var selectedMode: SegmentedClasses = .all
     @State private var searchText = ""
-    
-    @AppStorage("idObraDoDia") private var idObraDoDia: String = ""
+    @AppStorage("selectedIndex") private var selectedIndex: Int = 0
     @AppStorage("hasDiscovered") private var hasDiscovered: Bool = false
     @AppStorage("lastRollDate") private var lastRollDate: String = ""
-    @AppStorage("obrasSorteadasHistorico") private var obrasSorteadasHistorico: String = ""
-    
-    // MARK: - Controle de Onboarding e Carregamento
-    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
-    @State private var mostrarOnboarding: Bool = false
-    @State private var isLoading: Bool = false
-    @State private var mostrarToast: Bool = false
-    @State private var irParaObraDoDia: Bool = false
-    @State private var idNovaArteParaEditar: UUID? = nil
-    
-    let catalog = ObrasObjects().objects
-    
-    let albums = [
-        MockAlbum(name: "Grafite", category: .discoveries),
-        MockAlbum(name: "Realismo", category: .discoveries),
-        MockAlbum(name: "Pintura", category: .discoveries),
-        MockAlbum(name: "Barroco", category: .discoveries),
-        MockAlbum(name: "Retrato", category: .discoveries),
-        MockAlbum(name: "Meu Álbum", category: .personal)
+    @State private var mostrarToast = false
+    @State private var irParaObraDoDia = false
+
+    let obras = [
+        MockObra(name: "Stańczyk", author: "Jan Matejko", date: "1862", category: .discoveries),
+        MockObra(name: "A Criação de Adão", author: "Michelangelo", date: "1511", category: .discoveries),
+        MockObra(name: "Fiel até a morte", author: "Edward Poynter", date: "1865", category: .discoveries),
+        MockObra(name: "O céu de Ataíde", author: "Mestre Ataíde", date: "1812", category: .discoveries),
+        MockObra(name: "Minha obra", author: "Minha coleção", date: "2026", category: .personal)
     ]
-    
+
     let obrasColumns = [
         GridItem(.flexible()),
         GridItem(.flexible())
@@ -75,7 +66,7 @@ struct CollectionView: View {
         case .personal:
             result = result.filter { $0.origin == "Minhas" }
         }
-        
+
         if !searchText.isEmpty {
             result = result.filter { obra in
                 let nome = obra.nameArt ?? ""
@@ -107,86 +98,93 @@ struct CollectionView: View {
                 $0.name.localizedCaseInsensitiveContains(searchText)
             }
         }
-        
+
         return result
     }
-    
-    // MARK: - Interface Visual
-    
+
+    // MARK: - Body
+
     var body: some View {
-        Group {
-            // Troca direta de tela: exibe a LoadingView enquanto carrega
-            if isLoading {
-                LoadingView()
-                    .transition(.opacity)
-            } else {
-                NavigationStack {
-                    ZStack(alignment: .bottom) {
-                        ScrollView {
-                            VStack(spacing: 20) {
-                                
-                                // Header Principal
-                                HStack {
-                                    Text("Coleções")
-                                        .font(.largeTitle)
-                                        .fontWeight(.bold)
-                                        .foregroundColor(.primary)
-                                    
-                                    Spacer()
-                                    
-                                    BtnDescobertas {
-                                        tratarCliqueDescoberta()
-                                    }
-                                    .frame(width: 48, height: 48)
-                                }
-                                .padding(.horizontal)
-                                
-                                // Control de Categorias
-                                ArtSegmentedControl(selection: $selectedMode)
-                                    .padding(.horizontal)
-                                
-                                // Seção Álbuns
-                                NavigationLink(destination: AlbunsView(searchText: "")) {
-                                    HStack {
-                                        Text("Álbuns")
-                                            .font(.system(size: 28, weight: .bold))
-                                            .foregroundColor(.primary)
-                                        Image(systemName: "chevron.right")
-                                            .font(.system(size: 22, weight: .semibold))
-                                            .foregroundColor(.primary)
-                                        Spacer()
-                                    }
-                                    .padding(.horizontal)
-                                }
-                                .buttonStyle(.plain)
-                                
-                                ScrollView(Axis.Set.horizontal, showsIndicators: false) {
-                                    HStack(spacing: 10) {
-                                        ForEach(filteredAlbums, id: \.name) { album in
-                                            AlbumCover(
-                                                albumName: album.name,
-                                                coverWidth: 130,
-                                                coverHeight: 155
-                                            )
-                                        }
-                                    }
-                                    .padding(.horizontal, 15)
-                                }
-                                
-                                // Seção Obras + Botão de Adicionar
-                                HStack {
-                                    Text("Obras")
-                                        .font(.system(size: 28, weight: .bold))
-                                        .foregroundColor(.primary)
-                                        .padding(.horizontal, 2)
-                                    
-                                    Spacer()
-                                    
-                                    BtnAdd(
-                                        ButtonAction: {
-                                            tratarCriacaoObraManual()
-                                        },
-                                        icon: "plus"
+        NavigationStack {
+            ZStack(alignment: .bottom) {
+                ScrollView {
+                    VStack(spacing: 20) {
+                        // Header
+                        HStack {
+                            Text("Coleções")
+                                .font(.largeTitle)
+                                .fontWeight(.bold)
+                                .foregroundColor(.primary)
+                            Spacer()
+                            BtnDescobertas {
+                                tratarCliqueDescoberta()
+                            }
+                            .frame(width: 48, height: 48)
+                        }
+                        .padding(.horizontal)
+
+                        // Segmented Control
+                        ArtSegmentedControl(selection: $selectedMode)
+                            .padding(.horizontal)
+
+                        // Álbuns
+                        NavigationLink(destination: AllAlbunsView()) {
+                            HStack {
+                                Text("Álbuns")
+                                    .font(.system(size: 28, weight: .bold))
+                                    .foregroundColor(.primary)
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 22, weight: .semibold))
+                                    .foregroundColor(.primary)
+                                Spacer()
+                            }
+                            .padding(.horizontal)
+                        }
+                        .buttonStyle(.plain)
+
+                        AlbumHorizontalView(Vm: viewModel)
+
+                        // Obras
+                        HStack {
+                            Text("Obras")
+                                .font(.system(size: 28, weight: .bold))
+                                .foregroundColor(.primary)
+                            Spacer()
+                            BtnAdd(
+                                ButtonAction: { print("Add") },
+                                icon: "plus"
+                            )
+                            .frame(width: 40, height: 40)
+                        }
+                        .padding(.horizontal)
+                        .padding(.top, 10)
+
+                        if filteredObras.isEmpty {
+                            VStack(spacing: 10) {
+                                Image(systemName: "photo.on.rectangle.angled")
+                                    .font(.system(size: 40))
+                                    .foregroundStyle(.secondary)
+                                Text("Nenhuma obra encontrada")
+                                    .font(.headline)
+                                Text(
+                                    selectedMode == .personal
+                                    ? "Você ainda não possui obras na sua coleção."
+                                    : "Não encontramos obras para esse filtro."
+                                )
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 40)
+                            .padding(.horizontal)
+                        } else {
+                            LazyVGrid(columns: obrasColumns, spacing: 12) {
+                                ForEach(filteredObras, id: \.name) { obra in
+                                    ArtPreview(
+                                        artName: obra.name,
+                                        authorName: obra.author,
+                                        dateArt: obra.date
                                     )
                                     .frame(width: 40, height: 40)
                                     .padding(.horizontal, 9)
@@ -389,7 +387,7 @@ struct CollectionView: View {
     
     private func tratarCliqueDescoberta() {
         let hojeString = Date().formatted(date: .numeric, time: .omitted)
-        
+
         if lastRollDate == hojeString && hasDiscovered {
             exibirToast()
         } else {
