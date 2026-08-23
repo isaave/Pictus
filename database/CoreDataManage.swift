@@ -7,7 +7,7 @@
 
 import SwiftUI
 import Combine
-internal import CoreData
+import CoreData
 
 class CoreDataManage {
     

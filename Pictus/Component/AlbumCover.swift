@@ -8,11 +8,12 @@
 import SwiftUI
 struct AlbumCover: View {
     @State var albumName: String
+    var coverData: Data? = nil
     var coverWidth: CGFloat
     var coverHeight: CGFloat
 
      var body: some View {
-        Image("Image")
+        albumImage
             .resizable()
             .scaledToFill()
             .frame(width: coverWidth, height: coverHeight)
@@ -33,6 +34,15 @@ struct AlbumCover: View {
                     .fontWeight(.semibold)
                     .padding(.top, coverHeight * 0.71)
             )
+    }
+
+    private var albumImage: Image {
+        if let coverData,
+           let uiImage = UIImage(data: coverData) {
+            return Image(uiImage: uiImage)
+        }
+
+        return Image("Image")
     }
 }
 #Preview {

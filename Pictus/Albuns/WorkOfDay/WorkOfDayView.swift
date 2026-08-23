@@ -8,14 +8,6 @@
 import SwiftUI
 import CoreData
 
-//
-//  WorkOfDay.swift
-//  Pictus
-//
-
-import SwiftUI
-import CoreData
-
 struct WorkOfDay: View {
     @Environment(\.managedObjectContext) private var viewContext
     @StateObject private var viewModel = CoreDataRelationshipViewModel()

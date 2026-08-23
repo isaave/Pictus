@@ -6,11 +6,15 @@
 //
 
 import SwiftUI
-internal import CoreData
+import CoreData
 
 struct AddAlbumView: View {
     @EnvironmentObject var Vm: CoreDataRelationshipViewModel
     @Environment(\.dismiss) var dismiss
+
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \ArtEntity.dateArt, ascending: false)]
+    ) private var obrasEntities: FetchedResults<ArtEntity>
 
     @State private var nomeAlbum: String = ""
     @State private var obrasSelecionadas: [ArtEntity] = []
@@ -23,7 +27,7 @@ struct AddAlbumView: View {
     var body: some View {
         NavigationStack {
             Group {
-                if Vm.obrasEntities.isEmpty {
+                if obrasEntities.isEmpty {
                     ContentUnavailableView(
                         "Nenhuma obra encontrada",
                         systemImage: "paintbrush",
@@ -36,7 +40,7 @@ struct AddAlbumView: View {
                                 .font(Font.body.bold())
                                 .padding(.horizontal)
                                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
-                                
+                            
                             TextField("EX: renascentista", text: $nomeAlbum)
                                 .textFieldStyle(.roundedBorder)
                                 .padding(.horizontal)
@@ -49,7 +53,8 @@ struct AddAlbumView: View {
                             .padding(.horizontal)
 
                             LazyVGrid(columns: columns, spacing: 12) {
-                                ForEach(Vm.obrasEntities, id: \.objectID) { obra in
+                                // 🟢 Intera sobre o FetchRequest local
+                                ForEach(obrasEntities, id: \.objectID) { obra in
                                     obraSelectionCard(obra)
                                 }
                             }

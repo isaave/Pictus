@@ -5,7 +5,6 @@
 //  Created by Pedro Monge Silveira on 22/08/26.
 //
 
-
 import SwiftUI
 
 struct AlbumHorizontalView: View {
@@ -26,19 +25,18 @@ struct AlbumHorizontalView: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 20)
             } else {
-                // ✅ Scroll horizontal com álbuns do Core Data
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 10) {
-                        ForEach(Vm.albunsEntities, id: \.idAlbum) { album in
-                            NavigationLink {
-                                // ✅ View em branco — depois troque pela sua view real
-                                Color.clear
-                                    .navigationTitle(album.nameAlbum ?? "Álbum")
-                                    .navigationBarTitleDisplayMode(.inline)
-                            } label: {
-                                albumCard(album)
+                        ForEach(Vm.albunsEntities, id: \.objectID) { album in
+                            if let idAlbum = album.idAlbum {
+                                NavigationLink {
+                                    AlbunsView(idAlbum: idAlbum)
+                                        .environmentObject(Vm)
+                                } label: {
+                                    albumCard(album)
+                                }
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.horizontal, 15)
@@ -78,6 +76,7 @@ struct AlbumHorizontalView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
+
 #Preview {
     AlbumHorizontalView(Vm: CoreDataRelationshipViewModel())
 }

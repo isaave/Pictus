@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct AllAlbunsView: View {
     
@@ -21,11 +22,11 @@ struct AllAlbunsView: View {
     ]
     
     var filteredAlbuns: [AlbumEntity] {
-        
+        let albuns = Vm.albunsEntities.compactMap { $0 as? AlbumEntity }
         if searchText.isEmpty {
-            return Vm.albunsEntities
+            return albuns
         } else {
-            return Vm.albunsEntities.filter {
+            return albuns.filter {
                 ($0.nameAlbum ?? "")
                     .localizedCaseInsensitiveContains(searchText)
             }
@@ -33,124 +34,110 @@ struct AllAlbunsView: View {
     }
     
     var body: some View {
-        
-        NavigationStack {
+        VStack(spacing: 0) {
             
-            VStack(spacing: 0) {
-                
-                HStack {
-                    
-                    Button {
-                        dismiss()
-                    } label: {
-                        
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.primary)
-                            .frame(width: 48, height: 48)
-                            .glassEffect(
-                                .regular.interactive(),
-                                in: .rect(
-                                    cornerRadius: 55,
-                                    style: .continuous
-                                )
-                            )
-                    }
-                    .shadow(
-                        color: .black.opacity(0.08),
-                        radius: 10,
-                        x: 0,
-                        y: 5
-                    )
-                    .buttonStyle(.plain)
-                    
-                    Spacer()
-                    
-                    Text("Álbuns")
-                        .font(.system(size: 20, weight: .bold))
+            // Barra Superior
+            HStack {
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "chevron.left")
+                        .font(.system(size: 20, weight: .semibold))
                         .foregroundColor(.primary)
-                    
-                    Spacer()
-                    
-                    BtnAdd(
-                        ButtonAction: {
-                            mostrarAddAlbum = true
-                        },
-                        icon: "plus"
-                    )
-                    .frame(width: 48, height: 48)
+                        .frame(width: 48, height: 48)
+                        .glassEffect(
+                            .regular.interactive(),
+                            in: .rect(
+                                cornerRadius: 55,
+                                style: .continuous
+                            )
+                        )
                 }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
+                .shadow(
+                    color: .black.opacity(0.08),
+                    radius: 10,
+                    x: 0,
+                    y: 5
+                )
+                .buttonStyle(.plain)
                 
-                ScrollView {
+                Spacer()
+                
+                Text("Álbuns")
+                    .font(.system(size: 20, weight: .bold))
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                BtnAdd(
+                    ButtonAction: {
+                        mostrarAddAlbum = true
+                    },
+                    icon: "plus"
+                )
+                .frame(width: 48, height: 48)
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            
+            // Conteúdo
+            ScrollView {
+                if filteredAlbuns.isEmpty {
+                    VStack(spacing: 12) {
+                        Image(systemName: "rectangle.stack")
+                            .font(.system(size: 40))
+                            .foregroundStyle(.secondary)
+                        
+                        Text("Nenhum álbum encontrado")
+                            .font(.headline)
+                        
+                        Text("Você ainda não possui álbuns.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.top, 60)
                     
-                    if filteredAlbuns.isEmpty {
-                        
-                        VStack(spacing: 12) {
-                            
-                            Image(systemName: "rectangle.stack")
-                                .font(.system(size: 40))
-                                .foregroundStyle(.secondary)
-                            
-                            Text("Nenhum álbum encontrado")
-                                .font(.headline)
-                            
-                            Text("Você ainda não possui álbuns.")
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding(.top, 60)
-                        
-                    } else {
-                        
-                        LazyVGrid(
-                            columns: columns,
-                            spacing: 16
-                        ) {
-                            
-                            ForEach(
-                                filteredAlbuns,
-                                id: \.objectID
-                            ) { album in
+                } else {
+                    LazyVGrid(
+                        columns: columns,
+                        spacing: 16
+                    ) {
+                        ForEach(filteredAlbuns, id: \.objectID) { album in
+                            if let idAlbum = album.idAlbum {
                                 
-                                if let idAlbum = album.idAlbum {
-                                    
-                                    NavigationLink {
-                                        
-                                        AlbunsView(
-                                            idAlbum: idAlbum
-                                        )
+                                // 🟢 NavigationLink direto para a AlbunsView, sem depender de rotas globais
+                                NavigationLink {
+                                    AlbunsView(idAlbum: idAlbum)
                                         .environmentObject(Vm)
-                                        
-                                    } label: {
-                                        
-                                        AlbumCover(
-                                            albumName: album.nameAlbum ?? "Sem nome",
-                                            coverWidth: 175,
-                                            coverHeight: 210
-                                        )
-                                    }
-                                    .buttonStyle(.plain)
+                                } label: {
+                                    let obrasDoAlbum = album.art?.allObjects as? [ArtEntity] ?? []
+                                    let primeiraImagemValida = obrasDoAlbum.compactMap { $0.imgArt }.first
+                                    
+                                    AlbumCover(
+                                        albumName: album.nameAlbum ?? "Sem nome",
+                                        coverData: primeiraImagemValida,
+                                        coverWidth: 175,
+                                        coverHeight: 210
+                                    )
                                 }
+                                .buttonStyle(.plain)
                             }
                         }
-                        .padding(.horizontal, 16)
-                        .padding(.top, 16)
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
                 }
-                .searchable(
-                    text: $searchText,
-                    prompt: "Buscar álbuns"
-                )
             }
-            .navigationBarHidden(true)
-            // ✅ Sheet para criar novo álbum
-            .sheet(isPresented: $mostrarAddAlbum) {
-                AddAlbumView()
-                    .environmentObject(Vm)
-            }
+            .searchable(
+                text: $searchText,
+                prompt: "Buscar álbuns"
+            )
+        }
+        .navigationBarHidden(true)
+        .sheet(isPresented: $mostrarAddAlbum) {
+            AddAlbumView()
+                .environmentObject(Vm)
         }
     }
 }

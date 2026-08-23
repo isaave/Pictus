@@ -2,26 +2,17 @@
 //  CollectionView.swift
 //  Pictus
 //
+//  Created by Pedro Henrique Hossaka Teruel on 17/08/26.
+//
 
 import SwiftUI
 import CoreData
-
-// MARK: - Modelos de Apoio e Filtro
 
 enum SegmentedClasses: String, CaseIterable {
     case all = "Todos"
     case discoveries = "Descobertas"
     case personal = "Minhas"
 }
-
-struct MockObra {
-    let name: String
-    let author: String
-    let date: String
-    let category: SegmentedClasses
-}
-
-// MARK: - View Principal
 
 struct CollectionView: View {
     @Environment(\.managedObjectContext) private var viewContext
@@ -40,24 +31,28 @@ struct CollectionView: View {
     @State private var mostrarToast = false
     @State private var irParaObraDoDia = false
 
-    let obras = [
-        MockObra(name: "Stańczyk", author: "Jan Matejko", date: "1862", category: .discoveries),
-        MockObra(name: "A Criação de Adão", author: "Michelangelo", date: "1511", category: .discoveries),
-        MockObra(name: "Fiel até a morte", author: "Edward Poynter", date: "1865", category: .discoveries),
-        MockObra(name: "O céu de Ataíde", author: "Mestre Ataíde", date: "1812", category: .discoveries),
-        MockObra(name: "Minha obra", author: "Minha coleção", date: "2026", category: .personal)
-    ]
-
+    @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
+    @State private var mostrarOnboarding: Bool = false
+    
+    @State private var idNovaArteParaEditar: UUID? = nil
+    
+    // 🟢 Controla se exibe a LoadingView como tela cheia
+    @State private var isDiscovering: Bool = false
+    
     let obrasColumns = [
         GridItem(.flexible()),
         GridItem(.flexible())
     ]
-    
-    // MARK: - Filtros de Busca
-    
+
+    // MARK: - Filtros Computados
+
     var filteredObras: [ArtEntity] {
-        var result = Array(obrasEntities)
-        
+        var result = obrasEntities.filter { obra in
+            let temNome = (obra.nameArt != nil && !obra.nameArt!.isEmpty)
+            let temImagem = obra.imgArt != nil
+            return temNome || temImagem
+        }
+
         switch selectedMode {
         case .all:
             break
@@ -70,32 +65,11 @@ struct CollectionView: View {
         if !searchText.isEmpty {
             result = result.filter { obra in
                 let nome = obra.nameArt ?? ""
-                let local = obra.local ?? ""
                 let autor = obra.nameAuthor ?? ""
+                let local = obra.local ?? ""
                 return nome.localizedCaseInsensitiveContains(searchText) ||
-                       local.localizedCaseInsensitiveContains(searchText) ||
-                       autor.localizedCaseInsensitiveContains(searchText)
-            }
-        }
-        
-        return result
-    }
-    
-    var filteredAlbums: [MockAlbum] {
-        var result = albums
-        
-        switch selectedMode {
-        case .all:
-            break
-        case .discoveries:
-            result = albums.filter { $0.category == .discoveries }
-        case .personal:
-            result = albums.filter { $0.category == .personal }
-        }
-        
-        if !searchText.isEmpty {
-            result = result.filter {
-                $0.name.localizedCaseInsensitiveContains(searchText)
+                       autor.localizedCaseInsensitiveContains(searchText) ||
+                       local.localizedCaseInsensitiveContains(searchText)
             }
         }
 
@@ -106,171 +80,151 @@ struct CollectionView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack(alignment: .bottom) {
-                ScrollView {
-                    VStack(spacing: 20) {
-                        // Header
-                        HStack {
-                            Text("Coleções")
-                                .font(.largeTitle)
-                                .fontWeight(.bold)
-                                .foregroundColor(.primary)
-                            Spacer()
-                            BtnDescobertas {
-                                tratarCliqueDescoberta()
-                            }
-                            .frame(width: 48, height: 48)
-                        }
-                        .padding(.horizontal)
-
-                        // Segmented Control
-                        ArtSegmentedControl(selection: $selectedMode)
-                            .padding(.horizontal)
-
-                        // Álbuns
-                        NavigationLink(destination: AllAlbunsView()) {
+            // 🟢 Se estiver descobrindo, exibe a LoadingView como uma View de tela inteira
+            if isDiscovering {
+                LoadingView()
+                    .transition(.opacity)
+            } else {
+                ZStack(alignment: .bottom) {
+                    ScrollView {
+                        VStack(spacing: 20) {
+                            // Header
                             HStack {
-                                Text("Álbuns")
-                                    .font(.system(size: 28, weight: .bold))
-                                    .foregroundColor(.primary)
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: 22, weight: .semibold))
+                                Text("Coleções")
+                                    .font(.largeTitle)
+                                    .fontWeight(.bold)
                                     .foregroundColor(.primary)
                                 Spacer()
-                            }
-                            .padding(.horizontal)
-                        }
-                        .buttonStyle(.plain)
-
-                        AlbumHorizontalView(Vm: viewModel)
-
-                        // Obras
-                        HStack {
-                            Text("Obras")
-                                .font(.system(size: 28, weight: .bold))
-                                .foregroundColor(.primary)
-                            Spacer()
-                            BtnAdd(
-                                ButtonAction: { print("Add") },
-                                icon: "plus"
-                            )
-                            .frame(width: 40, height: 40)
-                        }
-                        .padding(.horizontal)
-                        .padding(.top, 10)
-
-                        if filteredObras.isEmpty {
-                            VStack(spacing: 10) {
-                                Image(systemName: "photo.on.rectangle.angled")
-                                    .font(.system(size: 40))
-                                    .foregroundStyle(.secondary)
-                                Text("Nenhuma obra encontrada")
-                                    .font(.headline)
-                                Text(
-                                    selectedMode == .personal
-                                    ? "Você ainda não possui obras na sua coleção."
-                                    : "Não encontramos obras para esse filtro."
-                                )
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
-                                .multilineTextAlignment(.center)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 40)
-                            .padding(.horizontal)
-                        } else {
-                            LazyVGrid(columns: obrasColumns, spacing: 12) {
-                                ForEach(filteredObras, id: \.name) { obra in
-                                    ArtPreview(
-                                        artName: obra.name,
-                                        authorName: obra.author,
-                                        dateArt: obra.date
-                                    )
-                                    .frame(width: 40, height: 40)
-                                    .padding(.horizontal, 9)
-                                }
-                                .padding(.top, 10)
-                                .padding(.horizontal)
                                 
-                                // Lista de Obras em Grade
-                                if filteredObras.isEmpty {
-                                    VStack(spacing: 10) {
-                                        Image(systemName: "photo.on.rectangle.angled")
-                                            .font(.system(size: 40))
-                                            .foregroundStyle(.secondary)
-                                        
-                                        Text("Nenhuma obra encontrada")
-                                            .font(.headline)
-                                        
-                                        Text(
-                                            selectedMode == .personal
-                                            ? "Você ainda não possui obras na sua coleção."
-                                            : "Não encontramos obras para esse filtro."
-                                        )
-                                        .font(.subheadline)
-                                        .foregroundStyle(.secondary)
-                                        .multilineTextAlignment(.center)
-                                    }
-                                    .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 40)
-                                    .padding(.horizontal)
-                                } else {
-                                    LazyVGrid(columns: obrasColumns, spacing: 12) {
-                                        ForEach(filteredObras, id: \.objectID) { obra in
-                                            NavigationLink(value: obra.objectID) {
-                                                ArtPreview(
-                                                    artName: obra.nameArt ?? "Sem Título",
-                                                    authorName: obra.nameAuthor ?? obra.local ?? "Desconhecido",
-                                                    dateArt: obra.dateArt?.formatted(date: .numeric, time: .omitted) ?? "",
-                                                    imgData: obra.imgArt
-                                                )
-                                            }
-                                            .buttonStyle(.plain)
-                                        }
-                                    }
-                                    .padding(.horizontal)
+                                BtnDescobertas {
+                                    tratarCliqueDescoberta()
                                 }
+                                .frame(width: 48, height: 48)
+                                .disabled(isDiscovering)
                             }
-                            .padding(.bottom, 30)
-                        }
-                        
-                        // Mensagem Flutuante de Bloqueio
-                        if mostrarToast {
-                            Text("Você já abriu ou adicionou uma obra hoje, espere até amanhã!")
-                                .font(.subheadline.weight(.medium))
-                                .foregroundStyle(.white)
-                                .padding(.vertical, 12)
-                                .padding(.horizontal, 18)
-                                .background(
-                                    Capsule()
-                                        .fill(Color.black.opacity(0.85))
+                            .padding(.horizontal)
+
+                            // Segmented Control
+                            ArtSegmentedControl(selection: $selectedMode)
+                                .padding(.horizontal)
+
+                            // Álbuns
+                            NavigationLink(destination: AllAlbunsView().environmentObject(viewModel)) {
+                                HStack {
+                                    Text("Álbuns")
+                                        .font(.system(size: 28, weight: .bold))
+                                        .foregroundColor(.primary)
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 22, weight: .semibold))
+                                        .foregroundColor(.primary)
+                                    Spacer()
+                                }
+                                .padding(.horizontal)
+                            }
+                            .buttonStyle(.plain)
+
+                            AlbumHorizontalView(Vm: viewModel)
+
+                            // Obras
+                            HStack {
+                                Text("Obras")
+                                    .font(.system(size: 28, weight: .bold))
+                                    .foregroundColor(.primary)
+                                Spacer()
+                                
+                                BtnAdd(
+                                    ButtonAction: {
+                                        tratarCriacaoObraManual()
+                                    },
+                                    icon: "plus"
                                 )
-                                .padding(.bottom, 25)
-                                .transition(.move(edge: .bottom).combined(with: .opacity))
+                                .frame(width: 40, height: 40)
+                            }
+                            .padding(.horizontal)
+                            .padding(.top, 10)
+
+                            if filteredObras.isEmpty {
+                                VStack(spacing: 10) {
+                                    Image(systemName: "photo.on.rectangle.angled")
+                                        .font(.system(size: 40))
+                                        .foregroundStyle(.secondary)
+                                    Text("Nenhuma obra encontrada")
+                                        .font(.headline)
+                                    Text(
+                                        selectedMode == .personal
+                                        ? "Você ainda não possui obras na sua coleção."
+                                        : "Não encontramos obras para esse filtro."
+                                    )
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
+                                    .multilineTextAlignment(.center)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 40)
+                                .padding(.horizontal)
+                            } else {
+                                LazyVGrid(columns: obrasColumns, spacing: 12) {
+                                    ForEach(filteredObras, id: \.objectID) { obra in
+                                        NavigationLink(value: obra.objectID) {
+                                            ArtPreview(
+                                                artName: obra.nameArt ?? "Sem Título",
+                                                authorName: obra.nameAuthor ?? obra.local ?? "Desconhecido",
+                                                dateArt: obra.dateArt?.formatted(date: .numeric, time: .omitted) ?? "",
+                                                imgData: obra.imgArt
+                                            )
+                                        }
+                                        .buttonStyle(.plain)
+                                    }
+                                }
+                                .padding(.horizontal)
+                            }
                         }
+                        .padding(.bottom, 30)
                     }
-                    .navigationDestination(for: NSManagedObjectID.self) { objectID in
-                        if let obraClicada = viewContext.object(with: objectID) as? ArtEntity {
-                            WorkOfDayContentView(obraAtual: obraClicada, viewModel: viewModel)
-                        }
-                    }
-                    .navigationDestination(isPresented: $irParaObraDoDia) {
-                        WorkOfDay()
-                    }
-                    .sheet(isPresented: Binding(
-                        get: { idNovaArteParaEditar != nil },
-                        set: { seAberto in
-                            if !seAberto { idNovaArteParaEditar = nil }
-                        }
-                    )) {
-                        if let uuid = idNovaArteParaEditar {
-                            NewArtView(viewModel: viewModel, obraID: uuid)
-                        }
+                     
+                    // Toast Feedback
+                    if mostrarToast {
+                        Text("Você já abriu esta obra hoje, espere até amanhã!")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(.white)
+                            .padding(.vertical, 12)
+                            .padding(.horizontal, 18)
+                            .background(
+                                Capsule()
+                                    .fill(Color.black.opacity(0.85))
+                            )
+                            .padding(.bottom, 25)
+                            .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
                 }
-                .searchable(text: $searchText, prompt: "Buscar obras e álbuns")
+                .navigationDestination(for: NSManagedObjectID.self) { objectID in
+                    if let obraClicada = viewContext.object(with: objectID) as? ArtEntity {
+                        WorkOfDayContentView(obraAtual: obraClicada, viewModel: viewModel)
+                    }
+                }
+                .navigationDestination(for: UUID.self) { idAlbum in
+                    AlbunsView(idAlbum: idAlbum)
+                        .environmentObject(viewModel)
+                }
+                .navigationDestination(isPresented: $irParaObraDoDia) {
+                    WorkOfDay()
+                }
+                .sheet(isPresented: Binding(
+                    get: { idNovaArteParaEditar != nil },
+                    set: { seAberto in
+                        if !seAberto { idNovaArteParaEditar = nil }
+                    }
+                )) {
+                    if let uuid = idNovaArteParaEditar {
+                        NewArtView(viewModel: viewModel, obraID: uuid)
+                    }
+                }
+                .onAppear {
+                    verificarESortearObraDoDia()
+                }
             }
         }
+        .searchable(text: $searchText, prompt: "Buscar obras e álbuns")
         .onAppear {
             if !hasSeenOnboarding {
                 mostrarOnboarding = true
@@ -280,9 +234,8 @@ struct CollectionView: View {
             onboardingView
         }
     }
-        
-    // MARK: - View de Onboarding
     
+    // MARK: - View de Onboarding
     private var onboardingView: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
@@ -297,26 +250,26 @@ struct CollectionView: View {
             }
             .padding(.top, 55)
             .padding(.bottom, 24)
-            
+             
             VStack(alignment: .leading, spacing: 14) {
                 Text("Conheça o")
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(Color("AccentColor"))
-                
+                 
                 Text("Pictus")
                     .font(.system(size: 34, weight: .bold))
                     .foregroundColor(.primary)
             }
             .padding(.horizontal, 54)
             .padding(.bottom, 32)
-            
+             
             VStack(alignment: .leading, spacing: 24) {
                 HStack(alignment: .top, spacing: 1) {
                     Image(systemName: "lightbulb.max.fill")
                         .font(.system(size: 24))
                         .foregroundColor(.accentColor)
                         .frame(width: 32)
-                    
+                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Reflita sobre arte")
                             .font(.system(size: 17, weight: .semibold))
@@ -327,13 +280,13 @@ struct CollectionView: View {
                     }
                     .padding(.horizontal, 30)
                 }
-                
+                 
                 HStack(alignment: .top, spacing: 1) {
                     Image(systemName: "photo.badge.magnifyingglass")
                         .font(.system(size: 24))
                         .foregroundColor(.accentColor)
                         .frame(width: 32)
-                    
+                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Descubra todos os dias")
                             .font(.system(size: 17, weight: .semibold))
@@ -344,13 +297,13 @@ struct CollectionView: View {
                     }
                     .padding(.horizontal, 30)
                 }
-                
+                 
                 HStack(alignment: .top, spacing: 1) {
                     Image(systemName: "camera.fill")
                         .font(.system(size: 24))
                         .foregroundColor(.accentColor)
                         .frame(width: 32)
-                    
+                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text("Encontre arte ao seu redor")
                             .font(.system(size: 17, weight: .semibold))
@@ -363,9 +316,9 @@ struct CollectionView: View {
                 }
             }
             .padding(.horizontal, 52)
-            
+             
             Spacer()
-            
+             
             Button {
                 hasSeenOnboarding = true
                 mostrarOnboarding = false
@@ -382,82 +335,90 @@ struct CollectionView: View {
             .padding(.bottom, 24)
         }
     }
-
-    // MARK: - Regras de Negócio
     
+    // MARK: - Métodos Auxiliares
+
     private func tratarCliqueDescoberta() {
+        guard !isDiscovering else { return }
+         
         let hojeString = Date().formatted(date: .numeric, time: .omitted)
 
         if lastRollDate == hojeString && hasDiscovered {
-            exibirToast()
-        } else {
-            withAnimation(.easeInOut(duration: 0.25)) {
-                isLoading = true
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                mostrarToast = true
             }
-            
-            Task {
-                if lastRollDate != hojeString {
-                    await sortearESalvarObraNoCoreDataAsync()
-                    lastRollDate = hojeString
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                withAnimation {
+                    mostrarToast = false
                 }
-                
-                try? await Task.sleep(nanoseconds: 500_000_000)
-                
-                withAnimation(.easeInOut(duration: 0.25)) {
-                    isLoading = false
+            }
+        } else {
+            // 🟢 Exibe a LoadingView como tela cheia
+            withAnimation {
+                isDiscovering = true
+            }
+             
+            // Aguarda a persistência/requisição e garante a saída da LoadingView para avançar
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                adicionarNovaDescoberta()
+                lastRollDate = hojeString
+                hasDiscovered = true
+                 
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                    withAnimation {
+                        isDiscovering = false
+                    }
                     irParaObraDoDia = true
                 }
             }
         }
     }
-    
-    @MainActor
-    private func sortearESalvarObraNoCoreDataAsync() async {
-        let historico = obrasSorteadasHistorico
-            .components(separatedBy: ",")
-            .filter { !$0.isEmpty }
-        
-        var naoVistas = catalog.filter { !historico.contains($0.name) }
-        
-        if naoVistas.isEmpty {
-            obrasSorteadasHistorico = ""
-            naoVistas = catalog
+     
+    private func adicionarNovaDescoberta() {
+        let catalogo = ObrasObjects().objects
+        if let obraSorteada = catalogo.randomElement() {
+            viewModel.addArt(obra: obraSorteada)
         }
-        
-        guard var obraSorteada = naoVistas.randomElement() else { return }
-        obraSorteada.origem = "Descobertas"
-        
-        viewModel.addArt(obra: obraSorteada)
-        
-        if let obraCriada = viewModel.obrasEntities.first(where: { $0.nameArt == obraSorteada.name }) {
-            idObraDoDia = obraCriada.id?.uuidString ?? ""
-        }
-        
-        var novoHistorico = historico
-        novoHistorico.append(obraSorteada.name)
-        obrasSorteadasHistorico = novoHistorico.joined(separator: ",")
-        
-        hasDiscovered = true
     }
-    
+     
     private func tratarCriacaoObraManual() {
         let idArteVazia = viewModel.addEmptyArt()
         idNovaArteParaEditar = idArteVazia
-        
+         
         let hojeString = Date().formatted(date: .numeric, time: .omitted)
         lastRollDate = hojeString
         hasDiscovered = true
     }
-    
-    private func exibirToast() {
-        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-            mostrarToast = true
+
+    private func verificarESortearObraDoDia() {
+        guard !obrasEntities.isEmpty else { return }
+        let hojeString = Date().formatted(date: .numeric, time: .omitted)
+
+        if lastRollDate != hojeString {
+            hasDiscovered = false
         }
-        
-        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-            withAnimation {
-                mostrarToast = false
+
+        if lastRollDate != hojeString || !obrasEntities.indices.contains(selectedIndex) {
+            executarSorteio()
+        }
+    }
+
+    private func sortearNovaObraManual() {
+        guard !obrasEntities.isEmpty else { return }
+        executarSorteio()
+        lastRollDate = Date().formatted(date: .numeric, time: .omitted)
+    }
+
+    private func executarSorteio() {
+        let obrasCount = obrasEntities.count
+        if obrasCount > 1 {
+            var novoIndice = selectedIndex
+            while novoIndice == selectedIndex {
+                novoIndice = Int.random(in: 0..<obrasCount)
             }
+            selectedIndex = novoIndice
+        } else {
+            selectedIndex = 0
         }
     }
 }

@@ -12,21 +12,11 @@ import UIKit
 struct NewArtView: View {
     @State private var upSheet = false
     @State private var selectedAlbums: Set<UUID> = []
-
     @Environment(\.dismiss) private var dismiss
     
     @ObservedObject var viewModel: CoreDataRelationshipViewModel
     
     let obraID: UUID
-
-//    let onSave: (
-//        _ nomeAutor: String?,
-//        _ nomeObra: String?,
-//        _ data: Date?,
-//        _ local: String?,
-//        _ imagem: Data?,
-//        _ id: UUID
-//    ) -> Void
     
     private var obraAtual: ArtEntity? {
         viewModel.obrasEntities.first(where: { $0.id == obraID })
@@ -44,6 +34,8 @@ struct NewArtView: View {
     @State private var isLoadingImage: Bool = false
     @State private var showImageError: Bool = false
     @State private var isFill: Bool = false
+    
+    @State private var showConfirmationAlert: Bool = false
 
     var body: some View {
         GeometryReader { geometry in
@@ -147,6 +139,8 @@ struct NewArtView: View {
                 .onChange(of: nome) { oldValue, newValue in
                     isFill = !newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 }
+                // 🟢 Impede que a sheet seja fechada deslizando para baixo
+                .interactiveDismissDisabled()
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
@@ -160,16 +154,6 @@ struct NewArtView: View {
                     ToolbarItem(placement: .topBarLeading) {
                         Button {
                             showConfirmationAlert = true
-//                            ConfirmationAlert(
-//                                title: "Atenção!",
-//                                message: "Você possui alterações que não foram salvas.",
-//                                question: "Deseja salvar as alterações?",
-//                                confirmTitle: "Sim",
-//                                cancelTitle: "Não",
-//                                onConfirm: {},
-//                                onCancel: {}
-//                            )
-                            
                         } label: {
                             Image(systemName: "chevron.backward")
                                 .fontWeight(.semibold)
@@ -216,8 +200,10 @@ struct NewArtView: View {
                                 confirmTitle: "Salvar",
                                 cancelTitle: "Descartar",
                                 onConfirm: {
-                                    save()
-                                    showConfirmationAlert = false
+                                    if canSave {
+                                        save()
+                                        showConfirmationAlert = false
+                                    }
                                 },
                                 onCancel: {
                                     discart()
@@ -263,20 +249,6 @@ private extension NewArtView {
         imageData != nil && !isLoadingImage && isFill
     }
 
-    
-//    private func save() {
-//        onSave(
-//            nomeAutor,
-//            nome,
-//            dataCriacao,
-//            local,
-//            imageData,
-//            obraID
-//        )
-//        dismiss()
-//    }
-    
-    
     private func save() {
         viewModel.editObra(
             name: nomeAutor,
@@ -293,11 +265,10 @@ private extension NewArtView {
     private func discart() {
         viewModel.deleteArt(
             uuid: obraID
-            )
+        )
+        dismiss()
     }
     
-    
-
     @MainActor
     func loadImage(from item: PhotosPickerItem) async {
 
@@ -325,20 +296,6 @@ private extension NewArtView {
         }
     }
 }
-
-//#Preview {
-//    NewArtView(
-//        obraID: UUID()
-//    ) { nomeAutor, nomeObra, data, local, imagem, id in
-//        print("Salvar obra:")
-//        print("ID:", id)
-//        print("Nome:", nomeObra ?? "")
-//        print("Autor:", nomeAutor ?? "")
-//        print("Data:", data as Any)
-//        print("Local:", local ?? "")
-//        print("Imagem:", imagem != nil)
-//    }
-//}
 
 #Preview {
     NewArtView(
