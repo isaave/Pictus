@@ -10,7 +10,7 @@ import CoreData
 
 struct WorkOfDay: View {
     @Environment(\.managedObjectContext) private var viewContext
-    @StateObject private var viewModel = CoreDataRelationshipViewModel()
+    @EnvironmentObject var viewModel: CoreDataRelationshipViewModel
     
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \ArtEntity.dateArt, ascending: false)]

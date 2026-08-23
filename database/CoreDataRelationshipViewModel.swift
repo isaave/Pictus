@@ -56,18 +56,22 @@ class CoreDataRelationshipViewModel: ObservableObject {
         }
     }
     
-    func addArt(obra: Obras){
+    @discardableResult
+    func addArt(obra: Obras) -> UUID {
         let newObra = ArtEntity(context: manager.context)
+        let id = UUID()
         
         newObra.ctxArt = obra.context.trimmingCharacters(in: .whitespaces).isEmpty ? nil : obra.context
-        newObra.id = UUID()
+        newObra.id = id
         newObra.nameArt = obra.name.trimmingCharacters(in: .whitespaces).isEmpty ? "Desconhecido" : obra.name
+        newObra.nameAuthor = obra.nameAutor.trimmingCharacters(in: .whitespaces).isEmpty ? nil : obra.nameAutor
         newObra.dateArt = obra.dataCriacao > Date() ? Date() : obra.dataCriacao
         newObra.imgArt = obra.img
         newObra.local = obra.local
         newObra.origin = obra.origem
         newObra.ctxReleased = false
         saveData()
+        return id
     }
     
     func addEmptyArt() -> UUID {

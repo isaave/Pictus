@@ -16,7 +16,7 @@ enum SegmentedClasses: String, CaseIterable {
 
 struct CollectionView: View {
     @Environment(\.managedObjectContext) private var viewContext
-    @StateObject var viewModel: CoreDataRelationshipViewModel = CoreDataRelationshipViewModel()
+    @EnvironmentObject var viewModel: CoreDataRelationshipViewModel
     
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \ArtEntity.dateArt, ascending: false)]
@@ -28,7 +28,9 @@ struct CollectionView: View {
     @AppStorage("selectedIndex") private var selectedIndex: Int = 0
     @AppStorage("hasDiscovered") private var hasDiscovered: Bool = false
     @AppStorage("lastRollDate") private var lastRollDate: String = ""
+    @AppStorage("idObraDoDia") private var idObraDoDia: String = ""
     @State private var mostrarToast = false
+    @State private var toastMessage = "Você já abriu esta obra hoje, espere até amanhã!"
     @State private var irParaObraDoDia = false
 
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
@@ -36,7 +38,7 @@ struct CollectionView: View {
     
     @State private var idNovaArteParaEditar: UUID? = nil
     
-    // 🟢 Controla se exibe a LoadingView como tela cheia
+    // Controla se exibe a LoadingView como tela cheia
     @State private var isDiscovering: Bool = false
     
     let obrasColumns = [
@@ -80,7 +82,7 @@ struct CollectionView: View {
 
     var body: some View {
         NavigationStack {
-            // 🟢 Se estiver descobrindo, exibe a LoadingView como uma View de tela inteira
+            // Se estiver descobrindo, exibe a LoadingView como uma View de tela inteira
             if isDiscovering {
                 LoadingView()
                     .transition(.opacity)
@@ -184,7 +186,7 @@ struct CollectionView: View {
                      
                     // Toast Feedback
                     if mostrarToast {
-                        Text("Você já abriu esta obra hoje, espere até amanhã!")
+                        Text(toastMessage)
                             .font(.subheadline.weight(.medium))
                             .foregroundStyle(.white)
                             .padding(.vertical, 12)
@@ -341,9 +343,41 @@ struct CollectionView: View {
     private func tratarCliqueDescoberta() {
         guard !isDiscovering else { return }
          
+        let catalogo = ObrasObjects().objects
+        
+        // Normaliza os nomes já cadastrados no banco (ignorando acentos, maiúsculas e espaços)
+        let nomesJaCadastrados = Set(obrasEntities.compactMap { obraEntity in
+            obraEntity.nameArt?
+                .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+        })
+        
+        // Filtra o catálogo comparando com os nomes rigorosamente normalizados
+        let catalogoDisponivel = catalogo.filter { obraCatalogo in
+            let nomeNormalizado = obraCatalogo.name
+                .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            return !nomesJaCadastrados.contains(nomeNormalizado)
+        }
+
+        // Validação de limite caso todas as obras tenham sido descobertas
+        if catalogoDisponivel.isEmpty {
+            toastMessage = "Você já descobriu todas as obras disponíveis!"
+            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
+                mostrarToast = true
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                withAnimation {
+                    mostrarToast = false
+                }
+            }
+            return
+        }
+
         let hojeString = Date().formatted(date: .numeric, time: .omitted)
 
         if lastRollDate == hojeString && hasDiscovered {
+            toastMessage = "Você já abriu esta obra hoje, espere até amanhã!"
             withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
                 mostrarToast = true
             }
@@ -353,14 +387,16 @@ struct CollectionView: View {
                 }
             }
         } else {
-            // 🟢 Exibe a LoadingView como tela cheia
+            // Exibe a LoadingView como tela cheia
             withAnimation {
                 isDiscovering = true
             }
              
-            // Aguarda a persistência/requisição e garante a saída da LoadingView para avançar
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                adicionarNovaDescoberta()
+                if let obraSorteada = catalogoDisponivel.randomElement() {
+                    let idObraSorteada = viewModel.addArt(obra: obraSorteada)
+                    idObraDoDia = idObraSorteada.uuidString
+                }
                 lastRollDate = hojeString
                 hasDiscovered = true
                  
@@ -371,13 +407,6 @@ struct CollectionView: View {
                     irParaObraDoDia = true
                 }
             }
-        }
-    }
-     
-    private func adicionarNovaDescoberta() {
-        let catalogo = ObrasObjects().objects
-        if let obraSorteada = catalogo.randomElement() {
-            viewModel.addArt(obra: obraSorteada)
         }
     }
      
@@ -425,4 +454,5 @@ struct CollectionView: View {
 
 #Preview {
     CollectionView()
+        .environmentObject(CoreDataRelationshipViewModel())
 }
