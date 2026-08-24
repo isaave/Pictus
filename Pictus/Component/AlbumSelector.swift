@@ -6,7 +6,7 @@
 //
 import SwiftUI
 struct AlbumSelector: View {
-    @ObservedObject var Vm: CoreDataRelationshipViewModel
+    @ObservedObject var Vm: SwiftDataRelationshipViewModel
     @Binding var selectedAlbums: Set<UUID>
 
     let onConfirm: () -> Void
@@ -53,7 +53,7 @@ struct AlbumSelector: View {
 
     @ViewBuilder
     private func albumCard(_ album: AlbumEntity) -> some View {
-        let isSelected = selectedAlbums.contains(album.idAlbum ?? UUID())
+        let isSelected = selectedAlbums.contains(album.idAlbum)
 
         ZStack(alignment: .center) {
             if let imgData = album.imgAlbum, let uiImage = UIImage(data: imgData) {
@@ -95,16 +95,16 @@ struct AlbumSelector: View {
                 .strokeBorder(.blue, lineWidth: isSelected ? 3 : 0)
         )
         .onLongPressGesture(minimumDuration: 0.5) {
-            if let id = album.idAlbum {
-                if selectedAlbums.contains(id) {
-                    selectedAlbums.remove(id)
-                } else {
-                    selectedAlbums.insert(id)
-                }
+            let id = album.idAlbum
+            if selectedAlbums.contains(id) {
+                selectedAlbums.remove(id)
+            } else {
+                selectedAlbums.insert(id)
             }
         }
         .onTapGesture {
-            if !selectedAlbums.isEmpty, let id = album.idAlbum {
+            let id = album.idAlbum
+            if !selectedAlbums.isEmpty {
                 if selectedAlbums.contains(id) {
                     selectedAlbums.remove(id)
                 } else {
@@ -117,7 +117,7 @@ struct AlbumSelector: View {
 
 #Preview {
     AlbumSelector(
-        Vm: CoreDataRelationshipViewModel(),
+        Vm: SwiftDataRelationshipViewModel(),
         selectedAlbums: .constant([]),
         onConfirm: {}
     )

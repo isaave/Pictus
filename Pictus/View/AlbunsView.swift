@@ -6,10 +6,9 @@
 //
 
 import SwiftUI
-import CoreData
 
 struct AlbunsView: View {
-    @EnvironmentObject var Vm: CoreDataRelationshipViewModel
+    @EnvironmentObject var Vm: SwiftDataRelationshipViewModel
     @Environment(\.dismiss) private var dismiss
     
     let idAlbum: UUID
@@ -20,12 +19,11 @@ struct AlbunsView: View {
     @State private var idNovaArteParaEditar: UUID? = nil
     
     var albumAtual: AlbumEntity? {
-        let albuns = Vm.albunsEntities.compactMap { $0 as? AlbumEntity }
-        return albuns.first { $0.idAlbum == idAlbum }
+        Vm.albunsEntities.first { $0.idAlbum == idAlbum }
     }
     
     var obrasDoAlbum: [ArtEntity] {
-        albumAtual?.art?.allObjects as? [ArtEntity] ?? []
+        albumAtual?.art ?? []
     }
     
     var filteredObras: [ArtEntity] {
@@ -91,7 +89,7 @@ struct AlbunsView: View {
                     .padding(.vertical, 60)
                 } else {
                     LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(filteredObras, id: \.objectID) { obra in
+                        ForEach(filteredObras) { obra in
                             NavigationLink {
                                 WorkOfDayContentView(obraAtual: obra, viewModel: Vm)
                             } label: {
@@ -127,8 +125,8 @@ struct AlbunsView: View {
     private func tratarCriacaoObraManual() {
         let idArteVazia = Vm.addEmptyArt()
         
-        if let albumId = albumAtual?.idAlbum {
-            Vm.addObraToAlbuns(idAlbuns: [albumId], idArt: idArteVazia)
+        if let albumAtual {
+            Vm.addObraToAlbuns(idAlbuns: [albumAtual.idAlbum], idArt: idArteVazia)
         }
         
         idNovaArteParaEditar = idArteVazia
@@ -137,5 +135,5 @@ struct AlbunsView: View {
 
 #Preview {
     AlbunsView(idAlbum: UUID())
-        .environmentObject(CoreDataRelationshipViewModel())
+        .environmentObject(SwiftDataRelationshipViewModel())
 }

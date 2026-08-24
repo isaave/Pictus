@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import CoreData
+import SwiftData
 
 enum SegmentedClasses: String, CaseIterable {
     case all = "Todos"
@@ -15,13 +15,10 @@ enum SegmentedClasses: String, CaseIterable {
 }
 
 struct CollectionView: View {
-    @Environment(\.managedObjectContext) private var viewContext
-    @EnvironmentObject var viewModel: CoreDataRelationshipViewModel
+    @EnvironmentObject var viewModel: SwiftDataRelationshipViewModel
     
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \ArtEntity.dateArt, ascending: false)]
-    )
-    private var obrasEntities: FetchedResults<ArtEntity>
+    @Query(sort: \ArtEntity.dateArt, order: .reverse)
+    private var obrasEntities: [ArtEntity]
     
     @State private var selectedMode: SegmentedClasses = .all
     @State private var searchText = ""
@@ -45,8 +42,6 @@ struct CollectionView: View {
         GridItem(.flexible()),
         GridItem(.flexible())
     ]
-
-
     var filteredObras: [ArtEntity] {
         var result = obrasEntities.filter { obra in
             let temNome = (obra.nameArt != nil && !obra.nameArt!.isEmpty)
@@ -163,8 +158,10 @@ struct CollectionView: View {
                                 .padding(.horizontal)
                             } else {
                                 LazyVGrid(columns: obrasColumns, spacing: 12) {
-                                    ForEach(filteredObras, id: \.objectID) { obra in
-                                        NavigationLink(value: obra.objectID) {
+                                    ForEach(filteredObras) { obra in
+                                        NavigationLink {
+                                            WorkOfDayContentView(obraAtual: obra, viewModel: viewModel)
+                                        } label: {
                                             ArtPreview(
                                                 artName: obra.nameArt ?? "Sem Título",
                                                 authorName: obra.nameAuthor ?? obra.local ?? "Desconhecido",
@@ -197,11 +194,6 @@ struct CollectionView: View {
                     }
                 }
                 .searchable(text: $searchText, prompt: "Buscar obras e álbuns")
-                .navigationDestination(for: NSManagedObjectID.self) { objectID in
-                    if let obraClicada = viewContext.object(with: objectID) as? ArtEntity {
-                        WorkOfDayContentView(obraAtual: obraClicada, viewModel: viewModel)
-                    }
-                }
                 .navigationDestination(for: UUID.self) { idAlbum in
                     AlbunsView(idAlbum: idAlbum)
                         .environmentObject(viewModel)
@@ -451,5 +443,5 @@ struct CollectionView: View {
 
 #Preview {
     CollectionView()
-        .environmentObject(CoreDataRelationshipViewModel())
+        .environmentObject(SwiftDataRelationshipViewModel())
 }

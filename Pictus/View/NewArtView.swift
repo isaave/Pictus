@@ -14,7 +14,7 @@ struct NewArtView: View {
     @State private var selectedAlbums: Set<UUID> = []
     @Environment(\.dismiss) private var dismiss
     
-    @ObservedObject var viewModel: CoreDataRelationshipViewModel
+    @ObservedObject var viewModel: SwiftDataRelationshipViewModel
     
     let obraID: UUID
     
@@ -34,9 +34,8 @@ struct NewArtView: View {
     @State private var isLoadingImage: Bool = false
     @State private var showImageError: Bool = false
     @State private var isFill: Bool = false
-    
-    @State private var showConfirmationAlert: Bool = false
 
+    @State private var showConfirmationAlert: Bool = false
     var body: some View {
         GeometryReader { geometry in
             NavigationStack {
@@ -301,7 +300,7 @@ private extension NewArtView {
 
 #Preview {
     NewArtView(
-        viewModel: CoreDataRelationshipViewModel(),
+        viewModel: SwiftDataRelationshipViewModel(),
         obraID: UUID()
     )
 }

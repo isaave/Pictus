@@ -6,15 +6,14 @@
 //
 
 import SwiftUI
-import CoreData
+import SwiftData
 
 struct AddAlbumView: View {
-    @EnvironmentObject var Vm: CoreDataRelationshipViewModel
+    @EnvironmentObject var Vm: SwiftDataRelationshipViewModel
     @Environment(\.dismiss) var dismiss
 
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \ArtEntity.dateArt, ascending: false)]
-    ) private var obrasEntities: FetchedResults<ArtEntity>
+    @Query(sort: \ArtEntity.dateArt, order: .reverse)
+    private var obrasEntities: [ArtEntity]
 
     @State private var nomeAlbum: String = ""
     @State private var obrasSelecionadas: [ArtEntity] = []
@@ -53,7 +52,7 @@ struct AddAlbumView: View {
                             .padding(.horizontal)
 
                             LazyVGrid(columns: columns, spacing: 12) {
-                                ForEach(obrasEntities, id: \.objectID) { obra in
+                                ForEach(obrasEntities) { obra in
                                     obraSelectionCard(obra)
                                 }
                             }
@@ -82,7 +81,7 @@ struct AddAlbumView: View {
 
     @ViewBuilder
     private func obraSelectionCard(_ obra: ArtEntity) -> some View {
-        let isSelected = obrasSelecionadas.contains(where: { $0.objectID == obra.objectID })
+        let isSelected = obrasSelecionadas.contains(where: { $0.id == obra.id })
 
         ZStack(alignment: .bottomLeading) {
             if let imgData = obra.imgArt, let uiImage = UIImage(data: imgData) {
@@ -124,7 +123,7 @@ struct AddAlbumView: View {
         )
         .onTapGesture {
             if isSelected {
-                obrasSelecionadas.removeAll { $0.objectID == obra.objectID }
+                obrasSelecionadas.removeAll { $0.id == obra.id }
             } else {
                 obrasSelecionadas.append(obra)
             }
@@ -133,7 +132,7 @@ struct AddAlbumView: View {
 }
 
 #Preview("Com obras disponíveis") {
-    let vm = CoreDataRelationshipViewModel()
+    let vm = SwiftDataRelationshipViewModel()
     vm.seedObrasIfNeeded()
     return NavigationStack {
         AddAlbumView()
@@ -142,7 +141,7 @@ struct AddAlbumView: View {
 }
 
 #Preview("Sem obras") {
-    let vm = CoreDataRelationshipViewModel()
+    let vm = SwiftDataRelationshipViewModel()
     return NavigationStack {
         AddAlbumView()
             .environmentObject(vm)

@@ -6,12 +6,11 @@
 //
 
 import SwiftUI
-import CoreData
 
 struct AllAlbunsView: View {
     
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject var Vm: CoreDataRelationshipViewModel
+    @EnvironmentObject var Vm: SwiftDataRelationshipViewModel
     
     @State private var searchText = ""
     @State private var mostrarAddAlbum = false
@@ -22,7 +21,7 @@ struct AllAlbunsView: View {
     ]
     
     var filteredAlbuns: [AlbumEntity] {
-        let albuns = Vm.albunsEntities.compactMap { $0 as? AlbumEntity }
+        let albuns = Vm.albunsEntities
         if searchText.isEmpty {
             return albuns
         } else {
@@ -103,25 +102,22 @@ struct AllAlbunsView: View {
                         columns: columns,
                         spacing: 16
                     ) {
-                        ForEach(filteredAlbuns, id: \.objectID) { album in
-                            if let idAlbum = album.idAlbum {
+                        ForEach(filteredAlbuns) { album in
+                            NavigationLink {
+                                AlbunsView(idAlbum: album.idAlbum)
+                                    .environmentObject(Vm)
+                            } label: {
+                                let obrasDoAlbum = album.art
+                                let primeiraImagemValida = obrasDoAlbum.compactMap { $0.imgArt }.first
                                 
-                                NavigationLink {
-                                    AlbunsView(idAlbum: idAlbum)
-                                        .environmentObject(Vm)
-                                } label: {
-                                    let obrasDoAlbum = album.art?.allObjects as? [ArtEntity] ?? []
-                                    let primeiraImagemValida = obrasDoAlbum.compactMap { $0.imgArt }.first
-                                    
-                                    AlbumCover(
-                                        albumName: album.nameAlbum ?? "Sem nome",
-                                        coverData: primeiraImagemValida,
-                                        coverWidth: 175,
-                                        coverHeight: 210
-                                    )
-                                }
-                                .buttonStyle(.plain)
+                                AlbumCover(
+                                    albumName: album.nameAlbum ?? "Sem nome",
+                                    coverData: primeiraImagemValida,
+                                    coverWidth: 175,
+                                    coverHeight: 210
+                                )
                             }
+                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.horizontal, 16)
@@ -144,6 +140,6 @@ struct AllAlbunsView: View {
 #Preview {
     AllAlbunsView()
         .environmentObject(
-            CoreDataRelationshipViewModel()
+            SwiftDataRelationshipViewModel()
         )
 }

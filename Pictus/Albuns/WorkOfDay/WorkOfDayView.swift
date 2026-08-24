@@ -6,16 +6,13 @@
 //
 
 import SwiftUI
-import CoreData
+import SwiftData
 
 struct WorkOfDay: View {
-    @Environment(\.managedObjectContext) private var viewContext
-    @EnvironmentObject var viewModel: CoreDataRelationshipViewModel
+    @EnvironmentObject var viewModel: SwiftDataRelationshipViewModel
     
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \ArtEntity.dateArt, ascending: false)]
-    )
-    var obras: FetchedResults<ArtEntity>
+    @Query(sort: \ArtEntity.dateArt, order: .reverse)
+    var obras: [ArtEntity]
     
     @AppStorage("idObraDoDia") private var idObraDoDia: String = ""
     
@@ -55,10 +52,10 @@ struct WorkOfDay: View {
 }
 struct WorkOfDayContentView: View {
     @Environment(\.colorScheme) var colorScheme
-    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.modelContext) private var modelContext
     
-    @ObservedObject var obraAtual: ArtEntity
-    @ObservedObject var viewModel: CoreDataRelationshipViewModel
+    var obraAtual: ArtEntity
+    @ObservedObject var viewModel: SwiftDataRelationshipViewModel
     
     @AppStorage("alreadyOpenedAlert") private var alreadyOpenedAlert: Bool = false
     @State private var showAlert = false
@@ -138,7 +135,7 @@ struct WorkOfDayContentView: View {
                                     showAlert.toggle()
                                 } else {
                                     obraAtual.ctxReleased.toggle()
-                                    try? viewContext.save()
+                                    try? modelContext.save()
                                 }
                             } label: {
                                 HStack(spacing: 6) {
@@ -209,7 +206,7 @@ struct WorkOfDayContentView: View {
                                 cancelTitle: "Não",
                                 onConfirm: {
                                     obraAtual.ctxReleased.toggle()
-                                    try? viewContext.save()
+                                    try? modelContext.save()
                                     showAlert = false
                                     alreadyOpenedAlert = true
                                 },

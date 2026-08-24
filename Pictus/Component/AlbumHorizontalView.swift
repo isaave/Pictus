@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct AlbumHorizontalView: View {
-    @ObservedObject var Vm: CoreDataRelationshipViewModel
+    @ObservedObject var Vm: SwiftDataRelationshipViewModel
 
     var body: some View {
         Group {
@@ -26,16 +26,14 @@ struct AlbumHorizontalView: View {
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 10) {
-                        ForEach(Vm.albunsEntities, id: \.objectID) { album in
-                            if let idAlbum = album.idAlbum {
-                                NavigationLink {
-                                    AlbunsView(idAlbum: idAlbum)
-                                        .environmentObject(Vm)
-                                } label: {
-                                    albumCard(album)
-                                }
-                                .buttonStyle(.plain)
+                        ForEach(Vm.albunsEntities) { album in
+                            NavigationLink {
+                                AlbunsView(idAlbum: album.idAlbum)
+                                    .environmentObject(Vm)
+                            } label: {
+                                albumCard(album)
                             }
+                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.horizontal, 15)
@@ -78,5 +76,5 @@ struct AlbumHorizontalView: View {
 }
 
 #Preview {
-    AlbumHorizontalView(Vm: CoreDataRelationshipViewModel())
+    AlbumHorizontalView(Vm: SwiftDataRelationshipViewModel())
 }

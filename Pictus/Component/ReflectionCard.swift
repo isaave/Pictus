@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct ReflectionCard: View {
-    @ObservedObject var obraAtual: ArtEntity
-    @ObservedObject var viewModel: CoreDataRelationshipViewModel
+    var obraAtual: ArtEntity
+    @ObservedObject var viewModel: SwiftDataRelationshipViewModel
     var hasButton : Bool
     @State private var reflection = ""
     @State private var wantsHelp: Bool = false
