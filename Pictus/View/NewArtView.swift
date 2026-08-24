@@ -97,7 +97,6 @@ struct NewArtView: View {
                         )
                         
                         .padding(.horizontal)
-                        .frame(minHeight: 520)
                     }
                     
                     HStack (alignment:.center){

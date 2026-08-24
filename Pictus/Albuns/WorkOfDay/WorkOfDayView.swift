@@ -188,7 +188,8 @@ struct WorkOfDayContentView: View {
             }
             .navigationTitle("\(obraAtual.nameArt ?? "Desconhecido")")
             
-            .ignoresSafeArea()
+            .ignoresSafeArea(edges:.top)
+            .scrollDismissesKeyboard(.interactively)
             .onAppear {
                 carregarReflexoes()
             }
