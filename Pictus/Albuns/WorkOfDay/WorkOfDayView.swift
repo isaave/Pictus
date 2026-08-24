@@ -76,6 +76,17 @@ struct WorkOfDayContentView: View {
                 Image(uiImage: UIImage(data: obraAtual.imgArt ?? Data()) ?? UIImage(systemName: "photo")!)
                     .resizable()
                     .scaledToFit()
+                    .overlay {
+                        LinearGradient(
+                            colors: [
+                                .clear,
+                                .black.opacity(0.7)
+                            ],
+                            startPoint: .center,
+                            endPoint: .bottom
+                        )
+                        .allowsHitTesting(false)
+                    }
                     .overlay(alignment: .bottomLeading) {
                         VStack(alignment: .leading) {
                             Text(obraAtual.nameArt ?? "Desconhecido")
@@ -88,28 +99,37 @@ struct WorkOfDayContentView: View {
                         .padding(16)
                     }
                 
+                
+                
                 VStack(alignment: .leading, spacing: 16) {
-                    Text("Sobre a obra")
-                        .font(.title2.bold())
                     
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(obraAtual.ctxArt ?? "Conteúdo da arte")
-                            .font(.body)
-                            .lineLimit(obraAtual.ctxReleased ? nil : 4)
-                            .overlay(alignment: .bottom) {
-                                if !obraAtual.ctxReleased {
-                                    LinearGradient(
-                                        colors: [
-                                            .clear,
-                                            colorScheme == .dark ? Color.black : Color.white
-                                        ],
-                                        startPoint: .top,
-                                        endPoint: .bottom
-                                    )
-                                    .frame(height: 40)
-                                    .allowsHitTesting(false)
-                                }
+                    
+                    if obraAtual.origin == "Descobertas"{
+                        Group{
+                            Text("Sobre a obra")
+                                .font(.title2.bold())
+                            
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text(obraAtual.ctxArt ?? "Conteúdo da arte")
+                                    .font(.body)
+                                    .lineLimit(obraAtual.ctxReleased ? nil : 4)
+                                    .overlay(alignment: .bottom) {
+                                        if !obraAtual.ctxReleased {
+                                            LinearGradient(
+                                                colors: [
+                                                    .clear,
+                                                    colorScheme == .dark ? Color.black : Color.white
+                                                ],
+                                                startPoint: .top,
+                                                endPoint: .bottom
+                                            )
+                                            .frame(height: 40)
+                                            .allowsHitTesting(false)
+                                        }
+                                    }
                             }
+                            
+                        }
                         
                         HStack {
                             Spacer()
@@ -132,6 +152,7 @@ struct WorkOfDayContentView: View {
                             }
                         }
                         .padding(.top, 4)
+                    }
                     }
                     
                     ReflectionCard(obraAtual: obraAtual, viewModel: viewModel,hasButton: true)
@@ -167,40 +188,38 @@ struct WorkOfDayContentView: View {
             }
             .navigationTitle("\(obraAtual.nameArt ?? "Desconhecido")")
             
-        }
-       
-        .ignoresSafeArea()
-        .onAppear {
-            carregarReflexoes()
-        }
-        .overlay(
-            Group {
-                if showAlert {
-                    ZStack {
-                        Color.black.opacity(0.4)
-                            .ignoresSafeArea()
-                            .onTapGesture { showAlert = false }
-                        
-                        ConfirmationAlert(
-                            title: "Atenção!",
-                            message: "Acessar o contexto desta obra sem análise prévia pode impactar sua interpretação.",
-                            question: "Deseja prosseguir?",
-                            confirmTitle: "Sim",
-                            cancelTitle: "Não",
-                            onConfirm: {
-                                obraAtual.ctxReleased.toggle()
-                                try? viewContext.save()
-                                showAlert = false
-                                alreadyOpenedAlert = true
-                            },
-                            onCancel: {
-                                showAlert = false
-                            }
-                        )
+            .ignoresSafeArea()
+            .onAppear {
+                carregarReflexoes()
+            }
+            .overlay(
+                Group {
+                    if showAlert {
+                        ZStack {
+                            Color.black.opacity(0.4)
+                                .ignoresSafeArea()
+                                .onTapGesture { showAlert = false }
+                            
+                            ConfirmationAlert(
+                                title: "Atenção!",
+                                message: "Acessar o contexto desta obra sem análise prévia pode impactar sua interpretação.",
+                                question: "Deseja prosseguir?",
+                                confirmTitle: "Sim",
+                                cancelTitle: "Não",
+                                onConfirm: {
+                                    obraAtual.ctxReleased.toggle()
+                                    try? viewContext.save()
+                                    showAlert = false
+                                    alreadyOpenedAlert = true
+                                },
+                                onCancel: {
+                                    showAlert = false
+                                }
+                            )
+                        }
                     }
                 }
-            }
-        )
+            )
     }
     
     private func carregarReflexoes() {
