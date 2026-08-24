@@ -13,7 +13,6 @@ struct AlbumHorizontalView: View {
     var body: some View {
         Group {
             if Vm.albunsEntities.isEmpty {
-                // ✅ Mensagem quando não tem álbuns
                 VStack(spacing: 8) {
                     Image(systemName: "folder")
                         .font(.system(size: 32))
@@ -48,10 +47,11 @@ struct AlbumHorizontalView: View {
 
     @ViewBuilder
     private func albumCard(_ album: AlbumEntity) -> some View {
-        ZStack(alignment: .bottomLeading) {
+        ZStack(alignment: .center) {
             if let imgData = album.imgAlbum, let uiImage = UIImage(data: imgData) {
                 Image(uiImage: uiImage)
                     .resizable()
+                    .scaledToFill()
                     .aspectRatio(1, contentMode: .fill)
             } else {
                 Rectangle()

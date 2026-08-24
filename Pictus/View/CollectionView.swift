@@ -85,7 +85,6 @@ struct CollectionView: View {
             // Se estiver descobrindo, exibe a LoadingView como uma View de tela inteira
             if isDiscovering {
                 LoadingView()
-                    .transition(.opacity)
             } else {
                 ZStack(alignment: .bottom) {
                     ScrollView {
@@ -199,6 +198,7 @@ struct CollectionView: View {
                             .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
                 }
+                .searchable(text: $searchText, prompt: "Buscar obras e álbuns")
                 .navigationDestination(for: NSManagedObjectID.self) { objectID in
                     if let obraClicada = viewContext.object(with: objectID) as? ArtEntity {
                         WorkOfDayContentView(obraAtual: obraClicada, viewModel: viewModel)
@@ -226,7 +226,6 @@ struct CollectionView: View {
                 }
             }
         }
-        .searchable(text: $searchText, prompt: "Buscar obras e álbuns")
         .onAppear {
             if !hasSeenOnboarding {
                 mostrarOnboarding = true
@@ -294,7 +293,7 @@ struct CollectionView: View {
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.primary)
                         Text("Receba uma nova obra diariamente e conheça diferentes formas de enxergar a arte.")
-                            .font(.system(size: 15))
+                            .font(.system(size: 17))
                             .foregroundColor(.secondary)
                     }
                     .padding(.horizontal, 30)
@@ -311,7 +310,7 @@ struct CollectionView: View {
                             .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.primary)
                         Text("Fotografe aquilo que você considera arte e reflita sobre isso.")
-                            .font(.system(size: 15))
+                            .font(.system(size: 17))
                             .foregroundColor(.secondary)
                     }
                     .padding(.horizontal, 30)

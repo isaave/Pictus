@@ -10,7 +10,7 @@ import SwiftUI
 struct ReflectionCard: View {
     @ObservedObject var obraAtual: ArtEntity
     @ObservedObject var viewModel: CoreDataRelationshipViewModel
-    
+    var hasButton : Bool
     @State private var reflection = ""
     @State private var wantsHelp: Bool = false
     @State private var selectedIndexes: [Int] = [0, 1, 2]
@@ -18,7 +18,6 @@ struct ReflectionCard: View {
     @AppStorage("hasDiscovered") private var hasDiscovered: Bool = false
     @AppStorage("lastRollDate") private var lastRollDate: String = ""
     @Environment(\.dismiss) private var dismiss
-    
     let questions = QuestionsClass()
     
     var body: some View {
@@ -71,35 +70,35 @@ struct ReflectionCard: View {
                 )
                 .padding(.vertical, 8)
                 
-                HStack {
-                    Spacer()
-                    Button {
-                        let textoReflexao = reflection.trimmingCharacters(in: .whitespacesAndNewlines)
-                        
-                        // 1. Salva no Core Data se houver texto digitado
-                        if !textoReflexao.isEmpty {
-                            viewModel.addReflection(rfx: textoReflexao, obra: obraAtual)
-                        }
-                        
-                        // 2. Atualiza estado e envia dismiss
-                        hasDiscovered = true
-                        lastRollDate = Date().formatted(date: .numeric, time: .omitted)
-                        dismiss()
-                    } label: {
-                        Text("Adicionar Reflexão")
-                            .font(.body)
-                            .fontWeight(.medium)
-                            .foregroundStyle(Color.primary)
-                            .padding(.horizontal, 30)
-                            .padding(.vertical, 12)
-                            .background {
-                                RoundedRectangle(cornerRadius: 32, style: .continuous)
-                                    .fill(Color.accentColor.opacity(0.15))
+                if hasButton{
+                    HStack {
+                        Spacer()
+                        Button {
+                            let textoReflexao = reflection.trimmingCharacters(in: .whitespacesAndNewlines)
+                            
+                            if !textoReflexao.isEmpty {
+                                viewModel.addReflection(rfx: textoReflexao, obra: obraAtual)
                             }
+                            
+                            hasDiscovered = true
+                            lastRollDate = Date().formatted(date: .numeric, time: .omitted)
+                            dismiss()
+                        } label: {
+                            Text("Adicionar Reflexão")
+                                .font(.body)
+                                .fontWeight(.medium)
+                                .foregroundStyle(Color.white)
+                                .padding(.horizontal, 30)
+                                .padding(.vertical, 12)
+                                .background {
+                                    RoundedRectangle(cornerRadius: 32, style: .continuous)
+                                        .fill(Color.accentColor)
+                                }
+                        }
+                        Spacer()
                     }
-                    Spacer()
+                    .padding(.top, 8)
                 }
-                .padding(.top, 8)
             }
             .padding()
         }

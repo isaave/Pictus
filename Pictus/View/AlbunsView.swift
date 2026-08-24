@@ -92,7 +92,6 @@ struct AlbunsView: View {
                 } else {
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(filteredObras, id: \.objectID) { obra in
-                            // 🟢 NavigationLink direto com closure para a tela da obra
                             NavigationLink {
                                 WorkOfDayContentView(obraAtual: obra, viewModel: Vm)
                             } label: {

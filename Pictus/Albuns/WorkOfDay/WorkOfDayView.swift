@@ -17,7 +17,6 @@ struct WorkOfDay: View {
     )
     var obras: FetchedResults<ArtEntity>
     
-    // Lê o UUID salvo da obra sorteada
     @AppStorage("idObraDoDia") private var idObraDoDia: String = ""
     
     private var obraSelecionada: ArtEntity? {
@@ -25,7 +24,6 @@ struct WorkOfDay: View {
            let obraDoDia = obras.first(where: { $0.id == uuid }) {
             return obraDoDia
         }
-        // Fallback para a primeira obra com origem 'Descobertas'
         return obras.first(where: { $0.origin == "Descobertas" }) ?? obras.first
     }
     
@@ -45,9 +43,11 @@ struct WorkOfDay: View {
         .navigationTitle("Obra do dia")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                BtnAdd(ButtonAction: {
+                Button{
                     print("Add")
-                }, icon: "ellipsis")
+                }label: {
+                    Image(systemName: "ellipsis")
+                }
             }
         }
         .ignoresSafeArea(edges: .top)
@@ -73,7 +73,6 @@ struct WorkOfDayContentView: View {
         
         ScrollView {
             VStack(spacing: 16) {
-                // Imagem
                 Image(uiImage: UIImage(data: obraAtual.imgArt ?? Data()) ?? UIImage(systemName: "photo")!)
                     .resizable()
                     .scaledToFit()
@@ -135,7 +134,7 @@ struct WorkOfDayContentView: View {
                         .padding(.top, 4)
                     }
                     
-                    ReflectionCard(obraAtual: obraAtual, viewModel: viewModel)
+                    ReflectionCard(obraAtual: obraAtual, viewModel: viewModel,hasButton: true)
                     
                     if !reflexoesSalvas.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
@@ -167,7 +166,9 @@ struct WorkOfDayContentView: View {
                 .padding(16)
             }
             .navigationTitle("\(obraAtual.nameArt ?? "Desconhecido")")
+            
         }
+       
         .ignoresSafeArea()
         .onAppear {
             carregarReflexoes()

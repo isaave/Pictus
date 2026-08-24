@@ -46,7 +46,7 @@ struct NewArtInfo: View {
                 HStack{
                     Text("Autor")
                         .font(.body)
-                    TextField("Isira o nome do autor", text:$nomeAutor)
+                    TextField("Insira o nome do autor", text:$nomeAutor)
                         .font(.body)
                         .disableAutocorrection(true)
                         .multilineTextAlignment(.trailing)

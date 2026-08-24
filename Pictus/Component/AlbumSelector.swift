@@ -55,10 +55,11 @@ struct AlbumSelector: View {
     private func albumCard(_ album: AlbumEntity) -> some View {
         let isSelected = selectedAlbums.contains(album.idAlbum ?? UUID())
 
-        ZStack(alignment: .bottomLeading) {
+        ZStack(alignment: .center) {
             if let imgData = album.imgAlbum, let uiImage = UIImage(data: imgData) {
                 Image(uiImage: uiImage)
                     .resizable()
+                    .scaledToFit()
                     .aspectRatio(1, contentMode: .fill)
             } else {
                 Rectangle()

@@ -41,7 +41,7 @@ struct NewArtView: View {
         GeometryReader { geometry in
             NavigationStack {
                 ScrollView {
-                    VStack(spacing: 0) {
+                    VStack(spacing: -100) {
                         ZStack(alignment: .bottomLeading) {
                             if let imagePreview {
                                 Image(uiImage: imagePreview)
@@ -92,14 +92,15 @@ struct NewArtView: View {
                     if let obraAtual {
                         ReflectionCard(
                             obraAtual: obraAtual,
-                            viewModel: viewModel
+                            viewModel: viewModel,
+                            hasButton: false
                         )
+                        
                         .padding(.horizontal)
                         .frame(minHeight: 520)
                     }
                     
-                    HStack {
-                        Spacer()
+                    HStack (alignment:.center){
                         Button {
                             save()
                         } label: {
@@ -126,7 +127,6 @@ struct NewArtView: View {
                                 }
                         }
                         .disabled(!canSave || !isFill)
-                        Spacer()
                     }.padding()
                     
                 }
@@ -139,7 +139,6 @@ struct NewArtView: View {
                 .onChange(of: nome) { oldValue, newValue in
                     isFill = !newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 }
-                // 🟢 Impede que a sheet seja fechada deslizando para baixo
                 .interactiveDismissDisabled()
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
@@ -200,7 +199,7 @@ struct NewArtView: View {
                                 confirmTitle: "Salvar",
                                 cancelTitle: "Descartar",
                                 onConfirm: {
-                                    if canSave {
+                                    if canSaveBack {
                                         save()
                                         showConfirmationAlert = false
                                     }
@@ -247,6 +246,10 @@ private extension NewArtView {
 
     var canSave: Bool {
         imageData != nil && !isLoadingImage && isFill
+    }
+    
+    var canSaveBack: Bool {
+        imageData != nil && !isLoadingImage
     }
 
     private func save() {

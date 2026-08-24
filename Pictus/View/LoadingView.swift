@@ -11,8 +11,6 @@ struct LoadingView: View {
     @StateObject var viewModel = EyeViewModel()
     var body: some View {
         GeometryReader { geo in
-            
-            
             ZStack {
                 Circle()
                     .fill(
@@ -57,8 +55,6 @@ struct LoadingView: View {
                 .symbolEffect(.variableColor.iterative.dimInactiveLayers.nonReversing, options: .repeat(.continuous))
                 .font(.title)
         }
-        Spacer()
-        
             }
         }
                 
