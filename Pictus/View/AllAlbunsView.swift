@@ -106,7 +106,6 @@ struct AllAlbunsView: View {
                         ForEach(filteredAlbuns, id: \.objectID) { album in
                             if let idAlbum = album.idAlbum {
                                 
-                                // 🟢 NavigationLink direto para a AlbunsView, sem depender de rotas globais
                                 NavigationLink {
                                     AlbunsView(idAlbum: idAlbum)
                                         .environmentObject(Vm)

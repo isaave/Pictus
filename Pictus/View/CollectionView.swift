@@ -46,7 +46,6 @@ struct CollectionView: View {
         GridItem(.flexible())
     ]
 
-    // MARK: - Filtros Computados
 
     var filteredObras: [ArtEntity] {
         var result = obrasEntities.filter { obra in
@@ -78,7 +77,6 @@ struct CollectionView: View {
         return result
     }
 
-    // MARK: - Body
 
     var body: some View {
         NavigationStack {

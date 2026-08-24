@@ -53,7 +53,6 @@ struct AddAlbumView: View {
                             .padding(.horizontal)
 
                             LazyVGrid(columns: columns, spacing: 12) {
-                                // 🟢 Intera sobre o FetchRequest local
                                 ForEach(obrasEntities, id: \.objectID) { obra in
                                     obraSelectionCard(obra)
                                 }

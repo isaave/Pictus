@@ -53,25 +53,6 @@ struct NewArtInfo: View {
                 }
                 .padding(.vertical, 6)
                 
-//                Divider()
-//                
-//                HStack{
-//                    Text("Nome da Obra")
-//                        .font(.body)
-//                    Spacer()
-//                    TextField("Insira o nome da obra", text: $nome)
-//                        .font(.body)
-//                        .disableAutocorrection(true)
-//                        .disabled(true)
-//                }
-//                Divider()
-//                HStack{
-//                    Text("Autor")
-//                        .font(.body)
-//                    Text("ola")
-////                    Spacer()
-////                    TextField("Insira o nome do autor", text: $nomeAutor)
-//                }
             }
             .padding()
         }
