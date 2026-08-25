@@ -6,13 +6,18 @@
 //
 
 import SwiftUI
+internal import SwiftData
 
 struct AlbumHorizontalView: View {
-    @ObservedObject var Vm: CoreDataRelationshipViewModel
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var viewModel: EntityRelationship
+    
+    @Query(sort: [SortDescriptor(\AlbumEntity.nameAlbum)])
+    private var albunsEntities: [AlbumEntity]
 
     var body: some View {
         Group {
-            if Vm.albunsEntities.isEmpty {
+            if albunsEntities.isEmpty {
                 VStack(spacing: 8) {
                     Image(systemName: "folder")
                         .font(.system(size: 32))
@@ -26,11 +31,11 @@ struct AlbumHorizontalView: View {
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 10) {
-                        ForEach(Vm.albunsEntities, id: \.objectID) { album in
-                            if let idAlbum = album.idAlbum {
+                        ForEach(albunsEntities, id: \.idAlbum) { album in
+                            
                                 NavigationLink {
-                                    AlbunsView(idAlbum: idAlbum)
-                                        .environmentObject(Vm)
+                                    AlbunsView(idAlbum: album.idAlbum)
+                                        .environmentObject(viewModel)
                                 } label: {
                                     albumCard(album)
                                 }
@@ -42,8 +47,7 @@ struct AlbumHorizontalView: View {
                 }
             }
         }
-        .onAppear { Vm.fetchAlbuns() }
-    }
+    
 
     @ViewBuilder
     private func albumCard(_ album: AlbumEntity) -> some View {
@@ -77,6 +81,4 @@ struct AlbumHorizontalView: View {
     }
 }
 
-#Preview {
-    AlbumHorizontalView(Vm: CoreDataRelationshipViewModel())
-}
+

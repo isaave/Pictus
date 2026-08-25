@@ -6,7 +6,7 @@
 //
 //
 
-public import Foundation
+internal import Foundation
 public import SwiftData
 
 
@@ -14,7 +14,7 @@ public import SwiftData
     var ctxArt: String?
     var ctxReleased: Bool?
     var dateArt: Date?
-    var id: UUID?
+    var id: UUID
     var imgArt: Data?
     var local: String?
     var nameArt: String?
@@ -23,6 +23,7 @@ public import SwiftData
     var albuns: [AlbumEntity]?
     @Relationship(inverse: \ReflectionEntity.art) var reflections: [ReflectionEntity]?
     public init() {
+        id = UUID()
         ctxReleased = false
     }
     

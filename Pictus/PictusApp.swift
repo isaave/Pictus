@@ -6,13 +6,23 @@
 //
 
 import SwiftUI
-import SwiftData
+internal import SwiftData
+
 @main
 struct PictusApp: App {
-    @StateObject private var Vm = CoreDataRelationshipViewModel()
-    
+    private let modelContainer: ModelContainer
+    @StateObject private var viewModel: EntityRelationship
     @State private var showSplash = true
-
+    
+    init() {
+        let container = try! ModelContainer(
+            for: ArtEntity.self, AlbumEntity.self, ReflectionEntity.self
+        )
+        self.modelContainer = container
+        
+        _viewModel = StateObject(wrappedValue: EntityRelationship(context: container.mainContext))
+    }
+    
     var body: some Scene {
         WindowGroup {
             ZStack {
@@ -25,17 +35,15 @@ struct PictusApp: App {
                         .transition(.opacity)
                 }
             }
+            .environmentObject(viewModel)
+            .modelContainer(modelContainer)
             .animation(.easeInOut(duration: 0.6), value: showSplash)
             .task {
                 try? await Task.sleep(for: .seconds(2))
-                
                 withAnimation {
                     showSplash = false
                 }
             }
         }
-        .modelContainer(for:ArtEntity.self)
-        .modelContainer(for:AlbumEntity.self)
-        .modelContainer(for:ReflectionEntity.self)
     }
 }

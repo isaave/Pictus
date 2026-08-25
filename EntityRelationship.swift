@@ -7,7 +7,7 @@
 
 internal import Foundation
 import Combine
-import SwiftData
+internal import SwiftData
 
 @MainActor
 final class EntityRelationship : ObservableObject{
@@ -16,6 +16,22 @@ final class EntityRelationship : ObservableObject{
     
     init(context: ModelContext) {
         self.context = context
+    }
+    
+    func addArtwork(name: String, author: String, date: Date,
+                    imageData: Data?, location: String?,
+                    origin: String, contextText: String?) {
+        let entity = ArtEntity()
+        entity.id = UUID()
+        entity.nameArt = name
+        entity.nameAuthor = author
+        entity.dateArt = date
+        entity.imgArt = imageData
+        entity.local = location
+        entity.origin = origin
+        entity.ctxArt = contextText
+        entity.ctxReleased = false
+        context.insert(entity)
     }
     
     func hasObras(in context: ModelContext) -> Bool {
@@ -41,54 +57,6 @@ final class EntityRelationship : ObservableObject{
         context.insert(emptyArt)
         return id
     }
-    //----------------------------------------------------------------------------------
-    
-    func addArt(obra: Obras){
-        let obra = ArtEntity()
-        obra.id = UUID()
-        obra.nameAuthor = obra.nameAuthor
-        obra.nameArt = obra.nameArt
-        obra.dateArt = obra.dateArt
-        obra.imgArt = obra.imgArt
-    }
-    
-}
-//
-//  ArtViewModel.swift
-//  Pictus
-//
-//  Created by Pedro Monge Silveira on 25/08/26.
-//
-
-
-
-final class ArtViewModel: ObservableObject {
-    private let context: ModelContext
-    
-    init(context: ModelContext) {
-        self.context = context
-    }
-    
-    // Obras
-    func addArtwork(name: String, author: String, date: Date,
-                    imageData: Data?, location: String?,
-                    origin: String, contextText: String?) {
-        let entity = ArtEntity()
-        entity.id = UUID()
-        entity.nameArt = name
-        entity.nameAuthor = author
-        entity.dateArt = date
-        entity.imgArt = imageData
-        entity.local = location
-        entity.origin = origin
-        entity.ctxArt = contextText
-        entity.ctxReleased = false
-        context.insert(entity)
-    }
-    
-    func deleteArtwork(_ art: ArtEntity) {
-        context.delete(art)
-    }
     
     func updateArtwork(_ art: ArtEntity, name: String?, artName: String?,
                        date: Date?, location: String?, imageData: Data?) {
@@ -97,6 +65,15 @@ final class ArtViewModel: ObservableObject {
         art.dateArt = date ?? art.dateArt
         art.local = location ?? art.local
         art.imgArt = imageData ?? art.imgArt
+    }
+
+    func addArt(obra: Obras){
+        let obra = ArtEntity()
+        obra.id = UUID()
+        obra.nameAuthor = obra.nameAuthor
+        obra.nameArt = obra.nameArt
+        obra.dateArt = obra.dateArt
+        obra.imgArt = obra.imgArt
     }
     
     // Reflexões
