@@ -7,12 +7,12 @@
 
 import SwiftUI
 import CoreData
-
+import SwiftData
 struct AllAlbunsView: View {
     
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var Vm: CoreDataRelationshipViewModel
-    
+    @Environment(\.modelContext) private var context
     @State private var searchText = ""
     @State private var mostrarAddAlbum = false
     

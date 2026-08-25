@@ -10,6 +10,12 @@ import UIKit
 struct ObrasObjects{
     var alreadyRoller = false
     
+//    let obrasDesconhecidas: [Obras] = [
+//        
+//    ]
+//    
+//    let obrasConhecidas: [Obras]
+    
     let objects: [Obras] = [
         Obras(
             name: "Stánczyk",

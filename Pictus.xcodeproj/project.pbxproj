@@ -7,16 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BA8F525230337C0900FCCE30 /* CoreDataManage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA8F525130337C0900FCCE30 /* CoreDataManage.swift */; };
+		650DFC32303CDD790087971E /* ArtEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 650DFC30303CDD790087971E /* ArtEntity.swift */; };
+		650DFC33303CDD790087971E /* AlbumEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 650DFC2F303CDD790087971E /* AlbumEntity.swift */; };
+		650DFC34303CDD790087971E /* ReflectionEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 650DFC31303CDD790087971E /* ReflectionEntity.swift */; };
+		650DFC36303E22A80087971E /* ArtRelationship.swift in Sources */ = {isa = PBXBuildFile; fileRef = 650DFC35303E229C0087971E /* ArtRelationship.swift */; };
 		BA8F525430337C4500FCCE30 /* CoreDataRelationshipViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA8F525330337C3C00FCCE30 /* CoreDataRelationshipViewModel.swift */; };
-		BA8F525730337C8700FCCE30 /* DatabaseModel.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = BA8F525530337C8700FCCE30 /* DatabaseModel.xcdatamodeld */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		650DFC2F303CDD790087971E /* AlbumEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlbumEntity.swift; sourceTree = "<group>"; };
+		650DFC30303CDD790087971E /* ArtEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtEntity.swift; sourceTree = "<group>"; };
+		650DFC31303CDD790087971E /* ReflectionEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionEntity.swift; sourceTree = "<group>"; };
+		650DFC35303E229C0087971E /* ArtRelationship.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtRelationship.swift; sourceTree = "<group>"; };
 		BA46F6D33034F135003CE5F2 /* Pictus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pictus.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		BA8F525130337C0900FCCE30 /* CoreDataManage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataManage.swift; sourceTree = "<group>"; };
 		BA8F525330337C3C00FCCE30 /* CoreDataRelationshipViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataRelationshipViewModel.swift; sourceTree = "<group>"; };
-		BA8F525630337C8700FCCE30 /* DatabaseModel.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = DatabaseModel.xcdatamodel; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -42,8 +46,6 @@
 			isa = PBXGroup;
 			children = (
 				BA8F525330337C3C00FCCE30 /* CoreDataRelationshipViewModel.swift */,
-				BA8F525130337C0900FCCE30 /* CoreDataManage.swift */,
-				BA8F525530337C8700FCCE30 /* DatabaseModel.xcdatamodeld */,
 			);
 			path = database;
 			sourceTree = "<group>";
@@ -51,9 +53,13 @@
 		F3FCECE3302F97DA004E4273 = {
 			isa = PBXGroup;
 			children = (
+				650DFC2F303CDD790087971E /* AlbumEntity.swift */,
+				650DFC30303CDD790087971E /* ArtEntity.swift */,
+				650DFC31303CDD790087971E /* ReflectionEntity.swift */,
 				BA46F80130364DAB003CE5F2 /* Pictus */,
 				BA8F525030337B9200FCCE30 /* database */,
 				BA46F6D33034F135003CE5F2 /* Pictus.app */,
+				650DFC35303E229C0087971E /* ArtRelationship.swift */,
 			);
 			sourceTree = "<group>";
 		};
@@ -131,8 +137,10 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				BA8F525230337C0900FCCE30 /* CoreDataManage.swift in Sources */,
-				BA8F525730337C8700FCCE30 /* DatabaseModel.xcdatamodeld in Sources */,
+				650DFC36303E22A80087971E /* ArtRelationship.swift in Sources */,
+				650DFC32303CDD790087971E /* ArtEntity.swift in Sources */,
+				650DFC33303CDD790087971E /* AlbumEntity.swift in Sources */,
+				650DFC34303CDD790087971E /* ReflectionEntity.swift in Sources */,
 				BA8F525430337C4500FCCE30 /* CoreDataRelationshipViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -347,19 +355,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCVersionGroup section */
-		BA8F525530337C8700FCCE30 /* DatabaseModel.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				BA8F525630337C8700FCCE30 /* DatabaseModel.xcdatamodel */,
-			);
-			currentVersion = BA8F525630337C8700FCCE30 /* DatabaseModel.xcdatamodel */;
-			path = DatabaseModel.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = F3FCECE4302F97DA004E4273 /* Project object */;
 }

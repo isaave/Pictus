@@ -6,10 +6,9 @@
 //
 
 import SwiftUI
-
+import SwiftData
 @main
 struct PictusApp: App {
-    let coreDataManager = CoreDataManage.instance
     @StateObject private var Vm = CoreDataRelationshipViewModel()
     
     @State private var showSplash = true
@@ -26,8 +25,6 @@ struct PictusApp: App {
                         .transition(.opacity)
                 }
             }
-            .environment(\.managedObjectContext, coreDataManager.context)
-            .environmentObject(Vm)
             .animation(.easeInOut(duration: 0.6), value: showSplash)
             .task {
                 try? await Task.sleep(for: .seconds(2))
@@ -37,5 +34,8 @@ struct PictusApp: App {
                 }
             }
         }
+        .modelContainer(for:ArtEntity.self)
+        .modelContainer(for:AlbumEntity.self)
+        .modelContainer(for:ReflectionEntity.self)
     }
 }

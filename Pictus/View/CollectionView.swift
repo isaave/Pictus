@@ -7,6 +7,7 @@
 
 import SwiftUI
 import CoreData
+import SwiftData
 
 enum SegmentedClasses: String, CaseIterable {
     case all = "Todos"
@@ -17,13 +18,7 @@ enum SegmentedClasses: String, CaseIterable {
 struct CollectionView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @EnvironmentObject var viewModel: CoreDataRelationshipViewModel
-    
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \ArtEntity.dateArt, ascending: false)]
-    )
-    private var obrasEntities: FetchedResults<ArtEntity>
-    
-    @State private var selectedMode: SegmentedClasses = .all
+    @Environment(\.modelContext) private var context
     @State private var searchText = ""
     @AppStorage("selectedIndex") private var selectedIndex: Int = 0
     @AppStorage("hasDiscovered") private var hasDiscovered: Bool = false
@@ -32,21 +27,19 @@ struct CollectionView: View {
     @State private var mostrarToast = false
     @State private var toastMessage = "Você já abriu esta obra hoje, espere até amanhã!"
     @State private var irParaObraDoDia = false
-
     @AppStorage("hasSeenOnboarding") private var hasSeenOnboarding: Bool = false
     @State private var mostrarOnboarding: Bool = false
-    
     @State private var idNovaArteParaEditar: UUID? = nil
-    
-    // Controla se exibe a LoadingView como tela cheia
     @State private var isDiscovering: Bool = false
-    
+    var descriptor = FetchDescriptor<ArtEntity>()
+    @Query var obrasEntities: [ArtEntity]
     let obrasColumns = [
         GridItem(.flexible()),
         GridItem(.flexible())
     ]
 
-
+    var art = ArtRelationship()
+    
     var filteredObras: [ArtEntity] {
         var result = obrasEntities.filter { obra in
             let temNome = (obra.nameArt != nil && !obra.nameArt!.isEmpty)
@@ -80,7 +73,6 @@ struct CollectionView: View {
 
     var body: some View {
         NavigationStack {
-            // Se estiver descobrindo, exibe a LoadingView como uma View de tela inteira
             if isDiscovering {
                 LoadingView()
             } else {
@@ -133,7 +125,7 @@ struct CollectionView: View {
                                 
                                 BtnAdd(
                                     ButtonAction: {
-                                        tratarCriacaoObraManual()
+                                        
                                     },
                                     icon: "plus"
                                 )
@@ -197,11 +189,6 @@ struct CollectionView: View {
                     }
                 }
                 .searchable(text: $searchText, prompt: "Buscar obras e álbuns")
-                .navigationDestination(for: NSManagedObjectID.self) { objectID in
-                    if let obraClicada = viewContext.object(with: objectID) as? ArtEntity {
-                        WorkOfDayContentView(obraAtual: obraClicada, viewModel: viewModel)
-                    }
-                }
                 .navigationDestination(for: UUID.self) { idAlbum in
                     AlbunsView(idAlbum: idAlbum)
                         .environmentObject(viewModel)
@@ -342,7 +329,6 @@ struct CollectionView: View {
          
         let catalogo = ObrasObjects().objects
         
-        // Normaliza os nomes já cadastrados no banco (ignorando acentos, maiúsculas e espaços)
         let nomesJaCadastrados = Set(obrasEntities.compactMap { obraEntity in
             obraEntity.nameArt?
                 .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
@@ -391,8 +377,8 @@ struct CollectionView: View {
              
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                 if let obraSorteada = catalogoDisponivel.randomElement() {
-                    let idObraSorteada = viewModel.addArt(obra: obraSorteada)
-                    idObraDoDia = idObraSorteada.uuidString
+                    let idObraSorteada = art.addArt(obra: obraSorteada)
+//                    idObraDoDia = idObraSorteada.uuidString
                 }
                 lastRollDate = hojeString
                 hasDiscovered = true
@@ -408,7 +394,7 @@ struct CollectionView: View {
     }
      
     private func tratarCriacaoObraManual() {
-        let idArteVazia = viewModel.addEmptyArt()
+        let idArteVazia = art.addEmptyArt(in: context)
         idNovaArteParaEditar = idArteVazia
          
         let hojeString = Date().formatted(date: .numeric, time: .omitted)
