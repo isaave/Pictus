@@ -14,12 +14,13 @@ struct NewArtView: View {
     @State private var selectedAlbums: Set<UUID> = []
     @Environment(\.dismiss) private var dismiss
     
-    @ObservedObject var viewModel: CoreDataRelationshipViewModel
+    var art = ArtRelationship()
+    @Query obrasEntities = [ArtEntity]
     
     let obraID: UUID
     
     private var obraAtual: ArtEntity? {
-        viewModel.obrasEntities.first(where: { $0.id == obraID })
+        obrasEntities.first(where: { $0.id == obraID })
     }
     
     @State private var nome = ""

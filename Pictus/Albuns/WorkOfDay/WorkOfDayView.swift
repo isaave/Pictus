@@ -10,7 +10,7 @@ import CoreData
 
 struct WorkOfDay: View {
     @Environment(\.managedObjectContext) private var viewContext
-    @EnvironmentObject var viewModel: CoreDataRelationshipViewModel
+//    @EnvironmentObject var viewModel: CoreDataRelationshipViewModel
     
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \ArtEntity.dateArt, ascending: false)]
@@ -58,7 +58,7 @@ struct WorkOfDayContentView: View {
     @Environment(\.managedObjectContext) private var viewContext
     
     @ObservedObject var obraAtual: ArtEntity
-    @ObservedObject var viewModel: CoreDataRelationshipViewModel
+//    @ObservedObject var viewModel: CoreDataRelationshipViewModel
     
     @AppStorage("alreadyOpenedAlert") private var alreadyOpenedAlert: Bool = false
     @State private var showAlert = false

@@ -33,4 +33,40 @@ class ArtRelationship{
         obra.imgArt = obra.imgArt
     }
     
+      func editObra(newAuthorName: String?,newNameArt : String?, newDate: Date?, newLocal: String?,newImg: Data?, uuid: UUID, in context: ModelContext ) {
+          let filterObra = #Predicate<ArtEntity>{ obrasEntities in
+              obrasEntities.id == uuid
+          }
+          let obra = FetchDescriptor<ArtEntity>(predicate: filterObra)
+          
+          do{
+              let obraASerAtualizada = try context.fetch(obra)
+              
+              if let obra = obraASerAtualizada.first{
+                  
+                  if let newAuthorName{
+                      obra.nameAuthor = newAuthorName
+                  }
+                  
+                  if let newNameArt{
+                      obra.nameArt = newNameArt
+                  }
+                  
+                  if let newDate{
+                      obra.dateArt = newDate
+                  }
+                  
+                  if let newLocal{
+                      obra.local = newLocal
+                  }
+                  
+                  if let newImg{
+                      obra.imgArt = newImg
+                  }
+                  
+              }
+          }catch{
+              print("Não foi possível encontrar a obra")
+          }
+      }
 }

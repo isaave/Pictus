@@ -6,9 +6,8 @@
 //
 //
 
-public import Foundation
-public import SwiftData
-
+import SwiftData
+import SwiftUI
 
 @Model public class ArtEntity {
     var ctxArt: String?
@@ -21,9 +20,18 @@ public import SwiftData
     var nameAuthor: String?
     var origin: String?
     var albuns: [AlbumEntity]?
-    @Relationship(inverse: \ReflectionEntity.art) var reflections: [ReflectionEntity]?
-    public init() {
-        ctxReleased = false
-    }
     
+    @Relationship(inverse: \ReflectionEntity.art) var reflections: [ReflectionEntity]?
+    
+    init(name: String? = nil, authorName: String? = nil, date: Date? = nil, local: String? = nil, img: Data? = nil, ctxArt: String? = nil, ctxReleased: Bool? = nil, origin: String? = nil) {
+        self.id = UUID() 
+        self.nameArt = name
+        self.nameAuthor = authorName
+        self.dateArt = date
+        self.local = local
+        self.imgArt = img
+        self.ctxArt = ctxArt
+        self.ctxReleased = ctxReleased
+        self.origin = origin
+    }
 }

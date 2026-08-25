@@ -17,8 +17,10 @@ enum SegmentedClasses: String, CaseIterable {
 
 struct CollectionView: View {
     @Environment(\.managedObjectContext) private var viewContext
-    @EnvironmentObject var viewModel: CoreDataRelationshipViewModel
     @Environment(\.modelContext) private var context
+        
+    @State private var selectedMode: SegmentedClasses = .all
+    
     @State private var searchText = ""
     @AppStorage("selectedIndex") private var selectedIndex: Int = 0
     @AppStorage("hasDiscovered") private var hasDiscovered: Bool = false
@@ -31,8 +33,11 @@ struct CollectionView: View {
     @State private var mostrarOnboarding: Bool = false
     @State private var idNovaArteParaEditar: UUID? = nil
     @State private var isDiscovering: Bool = false
+    
     var descriptor = FetchDescriptor<ArtEntity>()
+    @State private var funcObras = ObrasObjects()
     @Query var obrasEntities: [ArtEntity]
+    
     let obrasColumns = [
         GridItem(.flexible()),
         GridItem(.flexible())
@@ -70,7 +75,6 @@ struct CollectionView: View {
         return result
     }
 
-
     var body: some View {
         NavigationStack {
             if isDiscovering {
@@ -88,7 +92,8 @@ struct CollectionView: View {
                                 Spacer()
                                 
                                 BtnDescobertas {
-                                    tratarCliqueDescoberta()
+                                    let _ = funcObras.rollObra()
+                                    irParaObraDoDia = true
                                 }
                                 .frame(width: 48, height: 48)
                                 .disabled(isDiscovering)
@@ -100,7 +105,7 @@ struct CollectionView: View {
                                 .padding(.horizontal)
 
                             // Álbuns
-                            NavigationLink(destination: AllAlbunsView().environmentObject(viewModel)) {
+                            NavigationLink(destination: AllAlbunsView()) {
                                 HStack {
                                     Text("Álbuns")
                                         .font(.system(size: 28, weight: .bold))
@@ -324,75 +329,6 @@ struct CollectionView: View {
     
     // MARK: - Métodos Auxiliares
 
-    private func tratarCliqueDescoberta() {
-        guard !isDiscovering else { return }
-         
-        let catalogo = ObrasObjects().objects
-        
-        let nomesJaCadastrados = Set(obrasEntities.compactMap { obraEntity in
-            obraEntity.nameArt?
-                .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-        })
-        
-        // Filtra o catálogo comparando com os nomes rigorosamente normalizados
-        let catalogoDisponivel = catalogo.filter { obraCatalogo in
-            let nomeNormalizado = obraCatalogo.name
-                .folding(options: [.caseInsensitive, .diacriticInsensitive], locale: .current)
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-            return !nomesJaCadastrados.contains(nomeNormalizado)
-        }
-
-        // Validação de limite caso todas as obras tenham sido descobertas
-        if catalogoDisponivel.isEmpty {
-            toastMessage = "Você já descobriu todas as obras disponíveis!"
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-                mostrarToast = true
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                withAnimation {
-                    mostrarToast = false
-                }
-            }
-            return
-        }
-
-        let hojeString = Date().formatted(date: .numeric, time: .omitted)
-
-        if lastRollDate == hojeString && hasDiscovered {
-            toastMessage = "Você já abriu esta obra hoje, espere até amanhã!"
-            withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-                mostrarToast = true
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                withAnimation {
-                    mostrarToast = false
-                }
-            }
-        } else {
-            // Exibe a LoadingView como tela cheia
-            withAnimation {
-                isDiscovering = true
-            }
-             
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                if let obraSorteada = catalogoDisponivel.randomElement() {
-                    let idObraSorteada = art.addArt(obra: obraSorteada)
-//                    idObraDoDia = idObraSorteada.uuidString
-                }
-                lastRollDate = hojeString
-                hasDiscovered = true
-                 
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-                    withAnimation {
-                        isDiscovering = false
-                    }
-                    irParaObraDoDia = true
-                }
-            }
-        }
-    }
-     
     private func tratarCriacaoObraManual() {
         let idArteVazia = art.addEmptyArt(in: context)
         idNovaArteParaEditar = idArteVazia
@@ -433,9 +369,4 @@ struct CollectionView: View {
             selectedIndex = 0
         }
     }
-}
-
-#Preview {
-    CollectionView()
-        .environmentObject(CoreDataRelationshipViewModel())
 }

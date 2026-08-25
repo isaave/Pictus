@@ -6,15 +6,16 @@
 //
 
 import SwiftUI
-import CoreData
 import SwiftData
+
 struct AllAlbunsView: View {
-    
     @Environment(\.dismiss) private var dismiss
-    @EnvironmentObject var Vm: CoreDataRelationshipViewModel
     @Environment(\.modelContext) private var context
+    
     @State private var searchText = ""
     @State private var mostrarAddAlbum = false
+    
+    @Query var albunsEntities: [AlbumEntity]
     
     let columns = [
         GridItem(.flexible()),
@@ -22,11 +23,10 @@ struct AllAlbunsView: View {
     ]
     
     var filteredAlbuns: [AlbumEntity] {
-        let albuns = Vm.albunsEntities.compactMap { $0 as? AlbumEntity }
         if searchText.isEmpty {
-            return albuns
+            return albunsEntities
         } else {
-            return albuns.filter {
+            return albunsEntities.filter {
                 ($0.nameAlbum ?? "")
                     .localizedCaseInsensitiveContains(searchText)
             }
@@ -36,7 +36,6 @@ struct AllAlbunsView: View {
     var body: some View {
         VStack(spacing: 0) {
             
-            // Barra Superior
             HStack {
                 Button {
                     dismiss()
@@ -80,7 +79,6 @@ struct AllAlbunsView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             
-            // Conteúdo
             ScrollView {
                 if filteredAlbuns.isEmpty {
                     VStack(spacing: 12) {
@@ -103,14 +101,13 @@ struct AllAlbunsView: View {
                         columns: columns,
                         spacing: 16
                     ) {
-                        ForEach(filteredAlbuns, id: \.objectID) { album in
+                        ForEach(filteredAlbuns, id: \.idAlbum) { album in
                             if let idAlbum = album.idAlbum {
                                 
                                 NavigationLink {
                                     AlbunsView(idAlbum: idAlbum)
-                                        .environmentObject(Vm)
                                 } label: {
-                                    let obrasDoAlbum = album.art?.allObjects as? [ArtEntity] ?? []
+                                    let obrasDoAlbum = album.art ?? []
                                     let primeiraImagemValida = obrasDoAlbum.compactMap { $0.imgArt }.first
                                     
                                     AlbumCover(
@@ -133,17 +130,15 @@ struct AllAlbunsView: View {
                 prompt: "Buscar álbuns"
             )
         }
-        .navigationBarHidden(true)
+        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: $mostrarAddAlbum) {
             AddAlbumView()
-                .environmentObject(Vm)
         }
     }
 }
 
 #Preview {
     AllAlbunsView()
-        .environmentObject(
-            CoreDataRelationshipViewModel()
-        )
+        // O SwiftData precisa do modelContainer no Preview
+        .modelContainer(for: AlbumEntity.self, inMemory: true)
 }

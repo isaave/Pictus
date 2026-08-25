@@ -11,7 +11,6 @@
 		650DFC33303CDD790087971E /* AlbumEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 650DFC2F303CDD790087971E /* AlbumEntity.swift */; };
 		650DFC34303CDD790087971E /* ReflectionEntity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 650DFC31303CDD790087971E /* ReflectionEntity.swift */; };
 		650DFC36303E22A80087971E /* ArtRelationship.swift in Sources */ = {isa = PBXBuildFile; fileRef = 650DFC35303E229C0087971E /* ArtRelationship.swift */; };
-		BA8F525430337C4500FCCE30 /* CoreDataRelationshipViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA8F525330337C3C00FCCE30 /* CoreDataRelationshipViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,7 +19,6 @@
 		650DFC31303CDD790087971E /* ReflectionEntity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReflectionEntity.swift; sourceTree = "<group>"; };
 		650DFC35303E229C0087971E /* ArtRelationship.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArtRelationship.swift; sourceTree = "<group>"; };
 		BA46F6D33034F135003CE5F2 /* Pictus.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Pictus.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		BA8F525330337C3C00FCCE30 /* CoreDataRelationshipViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoreDataRelationshipViewModel.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -42,14 +40,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		BA8F525030337B9200FCCE30 /* database */ = {
-			isa = PBXGroup;
-			children = (
-				BA8F525330337C3C00FCCE30 /* CoreDataRelationshipViewModel.swift */,
-			);
-			path = database;
-			sourceTree = "<group>";
-		};
 		F3FCECE3302F97DA004E4273 = {
 			isa = PBXGroup;
 			children = (
@@ -57,7 +47,6 @@
 				650DFC30303CDD790087971E /* ArtEntity.swift */,
 				650DFC31303CDD790087971E /* ReflectionEntity.swift */,
 				BA46F80130364DAB003CE5F2 /* Pictus */,
-				BA8F525030337B9200FCCE30 /* database */,
 				BA46F6D33034F135003CE5F2 /* Pictus.app */,
 				650DFC35303E229C0087971E /* ArtRelationship.swift */,
 			);
@@ -141,7 +130,6 @@
 				650DFC32303CDD790087971E /* ArtEntity.swift in Sources */,
 				650DFC33303CDD790087971E /* AlbumEntity.swift in Sources */,
 				650DFC34303CDD790087971E /* ReflectionEntity.swift in Sources */,
-				BA8F525430337C4500FCCE30 /* CoreDataRelationshipViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

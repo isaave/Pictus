@@ -6,26 +6,30 @@
 //
 
 import SwiftUI
-import CoreData
+import SwiftData
 
 struct AlbunsView: View {
-    @EnvironmentObject var Vm: CoreDataRelationshipViewModel
+    
+    @Environment(\.modelContext) private var context
+    
+    @Query var albunsEntities: [AlbumEntity]
+    @Query var obrasEntities: [ArtEntity]
+    
     @Environment(\.dismiss) private var dismiss
     
     let idAlbum: UUID
-    
     let columns = [GridItem(.flexible()), GridItem(.flexible())]
     
     @State var searchText = ""
     @State private var idNovaArteParaEditar: UUID? = nil
     
     var albumAtual: AlbumEntity? {
-        let albuns = Vm.albunsEntities.compactMap { $0 as? AlbumEntity }
-        return albuns.first { $0.idAlbum == idAlbum }
+        return albunsEntities.first { $0.idAlbum == idAlbum }
     }
     
     var obrasDoAlbum: [ArtEntity] {
-        albumAtual?.art?.allObjects as? [ArtEntity] ?? []
+       
+        return albumAtual?.art ?? []
     }
     
     var filteredObras: [ArtEntity] {
@@ -91,9 +95,9 @@ struct AlbunsView: View {
                     .padding(.vertical, 60)
                 } else {
                     LazyVGrid(columns: columns, spacing: 16) {
-                        ForEach(filteredObras, id: \.objectID) { obra in
+                        ForEach(filteredObras, id: \.id) { obra in
                             NavigationLink {
-                                WorkOfDayContentView(obraAtual: obra, viewModel: Vm)
+                                WorkOfDayContentView(obraAtual: obra)
                             } label: {
                                 ArtPreview(
                                     artName: obra.nameArt ?? "Sem Título",
@@ -111,7 +115,8 @@ struct AlbunsView: View {
             }
             .searchable(text: $searchText, prompt: "Buscar obras no álbum")
         }
-        .navigationBarHidden(true)
+        // CORREÇÃO 4: Atualização de modificador depreciado
+        .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: Binding(
             get: { idNovaArteParaEditar != nil },
             set: { seAberto in
@@ -119,23 +124,29 @@ struct AlbunsView: View {
             }
         )) {
             if let uuid = idNovaArteParaEditar {
-                NewArtView(viewModel: Vm, obraID: uuid)
+                NewArtView(obraID: uuid)
             }
         }
     }
     
     private func tratarCriacaoObraManual() {
-        let idArteVazia = Vm.addEmptyArt()
+        // Cria a obra vazia no banco de dados e pega o UUID
+        let idArteVazia = ArtRelationship().addEmptyArt(in: context)
         
-        if let albumId = albumAtual?.idAlbum {
-            Vm.addObraToAlbuns(idAlbuns: [albumId], idArt: idArteVazia)
+        // CORREÇÃO 5: Lógica de vinculação da obra ao álbum
+        if let albumAtual = albumAtual {
+            // Busca a obra recém-criada para adicioná-la ao array do álbum atual
+            let descriptor = FetchDescriptor<ArtEntity>(predicate: #Predicate { $0.id == idArteVazia })
+            
+            if let novaObra = try? context.fetch(descriptor).first {
+                if albumAtual.art == nil {
+                    albumAtual.art = []
+                }
+                albumAtual.art?.append(novaObra)
+            }
         }
         
+        // Abre a sheet de edição
         idNovaArteParaEditar = idArteVazia
     }
-}
-
-#Preview {
-    AlbunsView(idAlbum: UUID())
-        .environmentObject(CoreDataRelationshipViewModel())
 }
