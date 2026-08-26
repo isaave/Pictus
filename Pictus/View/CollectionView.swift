@@ -92,7 +92,6 @@ struct CollectionView: View {
                 ZStack(alignment: .bottom) {
                     ScrollView {
                         VStack(spacing: 20) {
-                            // Header
                             HStack {
                                 Text("Coleções")
                                     .font(.largeTitle)
@@ -108,11 +107,9 @@ struct CollectionView: View {
                             }
                             .padding(.horizontal)
 
-                            // Segmented Control
                             ArtSegmentedControl(selection: $selectedMode)
                                 .padding(.horizontal)
 
-                            // Álbuns
                             NavigationLink(destination: AllAlbunsView()) {
                                 HStack {
                                     Text("Álbuns")
@@ -129,7 +126,6 @@ struct CollectionView: View {
 
                             AlbumHorizontalView(viewModel: _viewModel)
 
-                            // Obras
                             HStack {
                                 Text("Obras")
                                     .font(.system(size: 28, weight: .bold))
@@ -170,12 +166,33 @@ struct CollectionView: View {
                                 LazyVGrid(columns: obrasColumns, spacing: 12) {
                                     ForEach(filteredObras, id: \.id) { obra in
                                         NavigationLink(destination: WorkOfDayContentView(obra: obra, viewModel: viewModel)) {
-                                            ArtPreview(
-                                                artName: obra.nameArt ?? "Sem Título",
-                                                authorName: obra.nameAuthor ?? obra.local ?? "Desconhecido",
-                                                dateArt: obra.dateArt?.formatted(date: .numeric, time: .omitted) ?? "",
-                                                imgData: obra.imgArt
-                                            )
+                                            if obra.origin == "Minhas" {
+                                                ArtPreview(
+                                                    artName: obra.nameArt ?? "Sem Título",
+                                                    authorName: obra.nameAuthor ?? obra.local ?? "Desconhecido",
+                                                    dateArt: obra.dateArt?.formatted(date: .numeric, time: .omitted) ?? "",
+                                                    imgData: obra.imgArt
+                                                )
+                                                .contextMenu {
+                                                    Button {
+                                                        abrirNovaObra = obra
+                                                    } label: {
+                                                        Label("Editar Obra", systemImage: "pencil")
+                                                    }
+                                                    Button(role: .destructive) {
+                                                        context.delete(obra)
+                                                    } label: {
+                                                        Label("Apagar Obra", systemImage: "trash")
+                                                    }
+                                                }
+                                            } else {
+                                                ArtPreview(
+                                                    artName: obra.nameArt ?? "Sem Título",
+                                                    authorName: obra.nameAuthor ?? obra.local ?? "Desconhecido",
+                                                    dateArt: obra.dateArt?.formatted(date: .numeric, time: .omitted) ?? "",
+                                                    imgData: obra.imgArt
+                                                )
+                                            }
                                         }
                                         .buttonStyle(.plain)
                                     }
@@ -186,7 +203,6 @@ struct CollectionView: View {
                         .padding(.bottom, 30)
                     }
 
-                    // Toast Feedback
                     if mostrarToast {
                         Text(toastMessage)
                             .font(.subheadline.weight(.medium))
@@ -223,7 +239,6 @@ struct CollectionView: View {
         }
     }
 
-    // MARK: - View de Onboarding
     private var onboardingView: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
@@ -324,26 +339,24 @@ struct CollectionView: View {
         }
     }
 
-    /// Valida se o usuário já realizou o sorteio da obra do dia.
-    /// Caso já tenha feito hoje, exibe o toast de bloqueio. Caso contrário, sorteia e salva a data.
+    
     @discardableResult
     func verificarDiaDescoberta() -> Bool {
-        
-        let hoje = Date().formatted(date:.numeric, time: .omitted)
-        
+        if jaDescobriuHoje {
+            exibirToast("Você já descobriu uma obra hoje, volte amanhã!")
+            return false
+        }
         
         guard let novaObra = object.rollObra() else {
             exibirToast("Você já descobriu todas as obras disponíveis!")
             return false
         }
-        if lastRollDate == hoje {
-            exibirToast("Você já descobriu uma obra hoje, volte amanhã!")
-            return false
-        }
+        
         context.insert(novaObra)
         idObraDoDia = novaObra.id.uuidString
-        lastRollDate = todayString
+        lastRollDate = todayString 
         irParaObraDoDia = true
+        
         return true
     }
 

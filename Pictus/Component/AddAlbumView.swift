@@ -6,7 +6,6 @@
 //
 
 import SwiftUI
-import CoreData
 internal import SwiftData
 
 struct AddAlbumView: View {
@@ -16,7 +15,7 @@ struct AddAlbumView: View {
 
 
    
-    @Query(sort: \ArtEntity.dateArt, order: .reverse)
+    @Query(sort: \ArtEntity.dateArt, order: .forward)
     var obrasEntities: [ArtEntity]
 
     @State private var nomeAlbum: String = ""
@@ -74,8 +73,13 @@ struct AddAlbumView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Salvar") {
-                        let albumTemp = AlbumEntity(nameAlbum: nomeAlbum, imgAlbum: obrasSelecionadas.first?.imgArt, art: obrasSelecionadas)
-                        context.insert(albumTemp)
+                        let novoAlbum = AlbumEntity(nameAlbum: nomeAlbum, imgAlbum: obrasSelecionadas.first?.imgArt)
+                        context.insert(novoAlbum)
+                        
+                        for obra in obrasSelecionadas {
+                            novoAlbum.art.append(obra)
+                                }
+                        try? context.save()
                         dismiss()
                     }
                     .disabled(nomeAlbum.isEmpty || obrasSelecionadas.isEmpty)
@@ -136,19 +140,4 @@ struct AddAlbumView: View {
     }
 }
 
-//#Preview("Com obras disponíveis") {
-//    let vm = CoreDataRelationshipViewModel()
-//    vm.seedObrasIfNeeded()
-//    return NavigationStack {
-//        AddAlbumView()
-//            .environmentObject(vm)
-//    }
-//}
-//
-//#Preview("Sem obras") {
-//    let vm = CoreDataRelationshipViewModel()
-//    return NavigationStack {
-//        AddAlbumView()
-//            .environmentObject(vm)
-//    }
-//}
+

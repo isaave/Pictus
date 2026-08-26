@@ -19,64 +19,50 @@ struct NewArtView: View {
     
     @Query private var obrasEntities: [ArtEntity]
     
-    var obraAtual : ArtEntity
+    var obraAtual: ArtEntity
+    var albumPai: AlbumEntity?
     
-    @State private var nome = ""
-    @State private var nomeAutor = ""
-    @State private var dataCriacao = Date()
-    @State private var local = ""
+    private var isEditing: Bool {
+        obraAtual.modelContext != nil
+    }
     
-    @State private var selectedPhoto: PhotosPickerItem?
+    @State private var nome: String
+    @State private var nomeAutor: String
+    @State private var dataCriacao: Date
+    @State private var local: String
     @State private var imageData: Data?
     @State private var imagePreview: UIImage?
     
+    @State private var selectedPhoto: PhotosPickerItem?
     @State private var isLoadingImage: Bool = false
     @State private var showImageError: Bool = false
     @State private var isFill: Bool = false
-    
     @State private var showConfirmationAlert: Bool = false
+
+    init(obraAtual: ArtEntity, albumPai: AlbumEntity? = nil) {
+        self.obraAtual = obraAtual
+        self.albumPai = albumPai
+        
+        _nome = State(initialValue: obraAtual.nameArt ?? "")
+        _nomeAutor = State(initialValue: obraAtual.nameAuthor ?? "")
+        _dataCriacao = State(initialValue: obraAtual.dateArt ?? Date())
+        _local = State(initialValue: obraAtual.local ?? "")
+        _imageData = State(initialValue: obraAtual.imgArt)
+        
+        if let data = obraAtual.imgArt, let uiImage = UIImage(data: data) {
+            _imagePreview = State(initialValue: uiImage)
+        }
+    }
     
     var body: some View {
         GeometryReader { geometry in
             NavigationStack {
                 ScrollView {
                     VStack(spacing: -100) {
-                        ZStack(alignment: .bottomLeading) {
-                            if let imagePreview {
-                                Image(uiImage: imagePreview)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(maxWidth: geometry.size.width)
-                                    .frame(height: 400)
-                                    .clipped()
-                            } else {
-                                ZStack {
-                                    PhotosPicker(
-                                        selection: $selectedPhoto,
-                                        matching: .images
-                                    ) {
-                                        Group {
-                                            Image(systemName: "photo")
-                                        }
-                                        .font(.title3)
-                                        .foregroundStyle(.gray)
-                                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                                        .background(
-                                            .black.opacity(0.3)
-                                        )
-                                    }
-                                    .accessibilityLabel(
-                                        imageData == nil
-                                        ? "Selecionar imagem"
-                                        : "Alterar imagem"
-                                    )
-                                }
-                            }
-                            
-                            imagePickerButton
-                        }
-                        .frame(height: 400)
+                        imageSection(geometry: geometry)
+                        imagePickerButton
                     }
+                    .frame(height: 400)
                     
                     NewArtInfo(
                         nome: $nome,
@@ -86,55 +72,22 @@ struct NewArtView: View {
                     )
                     .padding()
                     
-                    //
-                    
-                    HStack(alignment: .center) {
-                        Button {
-                            save()
-                        } label: {
-                            Text("Registrar Obra")
-                                .font(.body)
-                                .fontWeight(.medium)
-                                .foregroundStyle(canSave ? Color.white : Color.gray.opacity(0.8))
-                                .padding(.horizontal, 30)
-                                .padding(.vertical)
-                                .background {
-                                    RoundedRectangle(
-                                        cornerRadius: 32,
-                                        style: .continuous
-                                    )
-                                    .fill(canSave ? Color.accentColor : .clear)
-                                    .glassEffect(
-                                        .regular.interactive(),
-                                        in: .rect(
-                                            cornerRadius: 32,
-                                            style: .continuous
-                                        )
-                                    )
-                                    .opacity(isFill ? 1.0 : 0.6)
-                                }
-                        }
-                        .disabled(!canSave || !isFill)
-                    }
-                    .padding()
+                    registrarObraButton
+                        .padding()
                 }
                 .background(Color(uiColor: .systemBackground))
                 .ignoresSafeArea(edges: .top)
                 .scrollDismissesKeyboard(.interactively)
-                .onAppear {
-                    obraAtual.nameArt = nome
-                    obraAtual.nameAuthor = nomeAutor
-                    obraAtual.imgArt = imageData
-                    obraAtual.local = local
-                    obraAtual.dateArt = dataCriacao
-                    obraAtual.imgArt = imageData
-                    
-                    isFill = !nome.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                }
-                .onChange(of: nome) { oldValue, newValue in
+                .interactiveDismissDisabled()
+                
+                .onAppear(perform: setupInitialData)
+                .onChange(of: nome) { _, newValue in
                     isFill = !newValue.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 }
-                .interactiveDismissDisabled()
+                .onChange(of: selectedPhoto) { _, newValue in
+                    guard let newValue else { return }
+                    Task { await loadImage(from: newValue) }
+                }
                 .toolbar {
                     ToolbarItem(placement: .topBarTrailing) {
                         Button {
@@ -152,75 +105,114 @@ struct NewArtView: View {
                             Image(systemName: "chevron.backward")
                                 .fontWeight(.semibold)
                         }
-                        .sheet(isPresented: $upSheet) {
-                            // Certifique-se de ajustar o AlbumSelector se ele usava o ViewModel antigo
-                            Text("Seletor de Álbuns") // Placeholder caso precise ajustar o AlbumSelector
-                        }
                     }
                 }
-                .onChange(of: selectedPhoto) { oldValue, newValue in
-                    guard let newValue else { return }
-                    
-                    Task {
-                        await loadImage(from: newValue)
-                    }
+                .sheet(isPresented: $upSheet) {
+                    AlbumSelector(
+                        selectedAlbums: $selectedAlbums,
+                        onConfirm: confirmarAlbuns
+                    )
                 }
-                .alert(
-                    "Não foi possível carregar a imagem",
-                    isPresented: $showImageError
-                ) {
+                .overlay {
+                    confirmationOverlay
+                }
+                .alert("Não foi possível carregar a imagem", isPresented: $showImageError) {
                     Button("OK", role: .cancel) { }
                 } message: {
                     Text("Selecione outra imagem e tente novamente.")
                 }
             }
-            .overlay(
-                Group {
-                    if showConfirmationAlert {
-                        ZStack {
-                            Color.black.opacity(0.4)
-                                .ignoresSafeArea()
-                                .onTapGesture { showConfirmationAlert = false }
-                            
-                            ConfirmationAlert(
-                                title: "Atenção!",
-                                message: "Você possui alterações que não foram salvas.",
-                                question: "Deseja salvar as alterações?",
-                                confirmTitle: "Salvar",
-                                cancelTitle: "Descartar",
-                                onConfirm: {
-                                    if canSaveBack {
-                                        save()
-                                        showConfirmationAlert = false
-                                    }
-                                },
-                                onCancel: {
-                                    discart()
-                                    showConfirmationAlert = false
-                                }
-                            )
-                        }
-                    }
-                }
-            )
         }
     }
 }
 
 private extension NewArtView {
+    
+    @ViewBuilder
+    func imageSection(geometry: GeometryProxy) -> some View {
+        ZStack(alignment: .bottomLeading) {
+            if let imagePreview {
+                Image(uiImage: imagePreview)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(maxWidth: geometry.size.width)
+                    .frame(height: 400)
+                    .clipped()
+            } else {
+                ZStack {
+                    PhotosPicker(selection: $selectedPhoto, matching: .images) {
+                        Image(systemName: "photo")
+                            .font(.title3)
+                            .foregroundStyle(.gray)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(Color.black.opacity(0.3))
+                    }
+                    .accessibilityLabel(imageData == nil ? "Selecionar imagem" : "Alterar imagem")
+                }
+            }
+        }
+    }
+    
+    var registrarObraButton: some View {
+        HStack(alignment: .center) {
+            Button(action: save) {
+                Text(isEditing ? "Confirmar Edição" : "Registrar Obra")
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .foregroundStyle(canSave ? Color.white : Color.gray.opacity(0.8))
+                    .padding(.horizontal, 30)
+                    .padding(.vertical)
+                    .background {
+                        RoundedRectangle(cornerRadius: 32, style: .continuous)
+                            .fill(canSave ? Color.accentColor : .clear)
+                            .glassEffect(
+                                .regular.interactive(),
+                                in: .rect(cornerRadius: 32, style: .continuous)
+                            )
+                            .opacity(isFill ? 1.0 : 0.6)
+                    }
+            }
+            .disabled(!canSave || !isFill)
+        }
+    }
+    
+    @ViewBuilder
+    var confirmationOverlay: some View {
+        if showConfirmationAlert {
+            ZStack {
+                Color.black.opacity(0.4)
+                    .ignoresSafeArea()
+                    .onTapGesture { showConfirmationAlert = false }
+                
+                ConfirmationAlert(
+                    title: "Atenção!",
+                    message: "Você possui alterações que não foram salvas.",
+                    question: "Deseja salvar as alterações?",
+                    confirmTitle: "Salvar",
+                    cancelTitle: "Descartar",
+                    onConfirm: {
+                        if canSaveBack {
+                            save()
+                            showConfirmationAlert = false
+                        }
+                    },
+                    onCancel: {
+                        discart()
+                        showConfirmationAlert = false
+                    }
+                )
+            }
+        }
+    }
+    
     var imagePickerButton: some View {
         VStack {
             HStack {
                 Spacer()
-                PhotosPicker(
-                    selection: $selectedPhoto,
-                    matching: .images
-                ) {
-                    Group {
-                        Image(systemName: "photo")
-                            .foregroundColor(.clear)
-                    }
-                    .frame(maxWidth: .infinity, maxHeight: 250)
+                PhotosPicker(selection: $selectedPhoto, matching: .images) {
+                    Image(systemName: "photo")
+                        .foregroundColor(.clear)
+                        .frame(maxWidth: .infinity, maxHeight: 250)
                 }
             }
             Spacer()
@@ -231,54 +223,81 @@ private extension NewArtView {
 }
 
 private extension NewArtView {
-    var canSave: Bool {
-        imageData != nil && !isLoadingImage && isFill
+    var canSave: Bool { imageData != nil && !isLoadingImage && isFill }
+    var canSaveBack: Bool { imageData != nil && !isLoadingImage }
+    
+    func setupInitialData() {
+        if !isEditing {
+            obraAtual.nameArt = nome
+            obraAtual.nameAuthor = nomeAutor
+            obraAtual.imgArt = imageData
+            obraAtual.local = local
+            obraAtual.dateArt = dataCriacao
+        }
+        isFill = !nome.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
     
-    var canSaveBack: Bool {
-        imageData != nil && !isLoadingImage
-    }
-    
-    private func save() {
-        // Atualiza a obra diretamente utilizando o SwiftData
-         
+    func save() {
         obraAtual.nameArt = nome
         obraAtual.nameAuthor = nomeAutor
         obraAtual.dateArt = dataCriacao
         obraAtual.local = local
         obraAtual.imgArt = imageData
         obraAtual.origin = "Minhas"
+        
+        if let albumPai = albumPai {
+            if !albumPai.art.contains(where: { $0.id == obraAtual.id }) {
+                albumPai.art.append(obraAtual)
+            }
+        }
+        
+        if !isEditing {
             context.insert(obraAtual)
+        }
         
-        
-        
+        try? context.save()
         dismiss()
     }
     
-    private func discart() {
-        context.delete(obraAtual)
+    func discart() {
+     
+        if !isEditing {
+            context.delete(obraAtual)
+        }
         dismiss()
+    }
+    
+    func confirmarAlbuns() {
+        let descriptor = FetchDescriptor<AlbumEntity>()
+        if let todosAlbuns = try? context.fetch(descriptor) {
+            let albunsSelecionados = todosAlbuns.filter { album in
+                return selectedAlbums.contains(album.idAlbum)
+            }
+            
+            for album in albunsSelecionados {
+                album.art = []
+                if !(album.art.contains(where: { $0.id == obraAtual.id })) {
+                    album.art.append(obraAtual)
+                }
+            }
+            try? context.save()
+        }
+        upSheet = false
     }
     
     @MainActor
     func loadImage(from item: PhotosPickerItem) async {
         isLoadingImage = true
-        
-        defer {
-            isLoadingImage = false
-        }
+        defer { isLoadingImage = false }
         
         do {
             guard let data = try await item.loadTransferable(type: Data.self),
-                  let uiImage = UIImage(data: data)
-            else {
+                  let uiImage = UIImage(data: data) else {
                 showImageError = true
                 return
             }
-            
             imageData = data
             imagePreview = uiImage
-            
         } catch {
             imageData = nil
             imagePreview = nil
@@ -286,8 +305,3 @@ private extension NewArtView {
         }
     }
 }
-
-//#Preview {
-//    NewArtView(obraID: UUID())
-//        .modelContainer(for: ArtEntity.self, inMemory: true)
-//}

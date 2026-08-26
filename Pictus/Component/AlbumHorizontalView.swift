@@ -9,7 +9,7 @@ import SwiftUI
 internal import SwiftData
 
 struct AlbumHorizontalView: View {
-    @Environment(\.modelContext) private var modelContext
+    @Environment(\.modelContext) private var context
     @EnvironmentObject var viewModel: EntityRelationship
 
     @Query(sort: [SortDescriptor(\AlbumEntity.nameAlbum)])
@@ -32,15 +32,20 @@ struct AlbumHorizontalView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 10) {
                         ForEach(albunsEntities, id: \.idAlbum) { album in
-                            if let idAlbum = album.idAlbum {
-                                NavigationLink {
-                                    AlbunsView(idAlbum: idAlbum)
-                                        .environmentObject(viewModel)
-                                } label: {
-                                    albumCard(album)
-                                }
-                                .buttonStyle(.plain)
+                            NavigationLink {
+                                AlbunsView(idAlbum: album.idAlbum)
+                                    .environmentObject(viewModel)
+                            } label: {
+                                albumCard(album)
+                                    .contextMenu{
+                                        Button(role:.destructive){
+                                            context.delete(album)
+                                        } label: {
+                                            Label("Apagar Álbum",systemImage: "trash")
+                                        }
+                                    }
                             }
+                            .buttonStyle(.plain)
                         }
                     }
                     .padding(.horizontal, 15)
@@ -51,15 +56,19 @@ struct AlbumHorizontalView: View {
 
     @ViewBuilder
     private func albumCard(_ album: AlbumEntity) -> some View {
-        ZStack(alignment: .center) {
-            if let imgData = album.imgAlbum, let uiImage = UIImage(data: imgData) {
+        let primeiraObraComImagem = album.art.first(where: { $0.imgArt != nil })
+        let imgData = primeiraObraComImagem?.imgArt
+
+        ZStack(alignment: .bottom) {
+            if let imgData, let uiImage = UIImage(data: imgData) {
                 Image(uiImage: uiImage)
                     .resizable()
+                    .frame(width: 150, height: 150)
                     .scaledToFill()
-                    .aspectRatio(1, contentMode: .fill)
             } else {
                 Rectangle()
                     .fill(Color.gray.opacity(0.2))
+                    .frame(width: 150, height: 150)
                     .overlay {
                         Image(systemName: "photo")
                             .foregroundStyle(.secondary)
@@ -70,13 +79,13 @@ struct AlbumHorizontalView: View {
                 .font(.caption)
                 .fontWeight(.semibold)
                 .foregroundStyle(.white)
-                .padding(8)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+                .frame(maxWidth: 150, alignment: .leading)
                 .background(
                     LinearGradient(colors: [.clear, .black.opacity(0.6)], startPoint: .top, endPoint: .bottom)
                 )
         }
-        .frame(width: 130, height: 155)
+        .frame(width: 150, height: 150)
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }

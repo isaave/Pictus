@@ -48,11 +48,10 @@ struct AlbumSelector: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(role: .close) { onConfirm() }
+                    Button("Cancelar") { onConfirm() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(role: .confirm) { onConfirm() }
-                        .disabled(albunsEntities.isEmpty)
+                    Button("Concluído") { onConfirm() }
                 }
             }
         }
@@ -60,25 +59,24 @@ struct AlbumSelector: View {
 
     @ViewBuilder
     private func albumCard(_ album: AlbumEntity) -> some View {
-        let isSelected = selectedAlbums.contains(album.idAlbum!)
-        
-        ZStack(alignment: .center) {
+        let isSelected = selectedAlbums.contains(album.idAlbum)
+
+        ZStack(alignment: .bottomLeading) {
             if let imgData = album.imgAlbum, let uiImage = UIImage(data: imgData) {
                 Image(uiImage: uiImage)
                     .resizable()
-                    .scaledToFit()
                     .aspectRatio(1, contentMode: .fill)
             } else {
                 Rectangle()
                     .fill(Color.gray.opacity(0.2))
                     .aspectRatio(1, contentMode: .fit)
                     .overlay {
-                        Image(systemName: "photo")
+                        Image(systemName: "folder")
                             .foregroundStyle(.secondary)
                     }
             }
 
-            Text(album.nameAlbum ?? "Sem nome")
+            Text(album.nameAlbum ?? "Álbum sem nome")
                 .font(.caption)
                 .fontWeight(.semibold)
                 .foregroundStyle(.white)
@@ -102,11 +100,10 @@ struct AlbumSelector: View {
                 .strokeBorder(.blue, lineWidth: isSelected ? 3 : 0)
         )
         .onTapGesture {
-            let id = album.idAlbum
-            if selectedAlbums.contains(id!) {
-                selectedAlbums.remove(id!)
+            if isSelected {
+                selectedAlbums.remove(album.idAlbum)
             } else {
-                selectedAlbums.insert(id!)
+                selectedAlbums.insert(album.idAlbum)
             }
         }
     }

@@ -45,7 +45,6 @@ struct AlbunsView: View {
     
     var body: some View {
         VStack(spacing: 0) {
-            // Barra Superior Personalizada
             HStack {
                 Button {
                     dismiss()
@@ -77,7 +76,6 @@ struct AlbunsView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
             
-            // Conteúdo com Scroll
             ScrollView {
                 if filteredObras.isEmpty {
                     VStack(spacing: 10) {
@@ -105,6 +103,15 @@ struct AlbunsView: View {
                                     dateArt: obra.dateArt?.formatted(date: .numeric, time: .omitted) ?? "",
                                     imgData: obra.imgArt
                                 )
+                                .contextMenu{
+                                    Button(role:.destructive){
+                                        if let albumAtual = albumAtual {
+                                                            removerObraDoAlbum(obra, do: albumAtual)
+                                                        }
+                                    } label: {
+                                        Label("Apagar Obra",systemImage:"trash")
+                                    }
+                                }
                             }
                             .buttonStyle(.plain)
                         }
@@ -115,27 +122,24 @@ struct AlbunsView: View {
             }
             .searchable(text: $searchText, prompt: "Buscar obras no álbum")
         }
-        // CORREÇÃO 4: Atualização de modificador depreciado
         .toolbar(.hidden, for: .navigationBar)
         .sheet(item: $obraAtual) { obra in
-            NewArtView(obraAtual: obra)
+            NewArtView(obraAtual: obra, albumPai: albumAtual)
         }
+    }
+    
+    private func removerObraDoAlbum(_ obra: ArtEntity, do album: AlbumEntity) {
+        album.art.removeAll { $0.id == obra.id }
+                try? context.save()
     }
     
     private func tratarCriacaoObraManual() {
         let idArteVazia = EntityRelationship(context: context).addEmptyArt(in: context)
-        
-        if let albumAtual = albumAtual {
-            let descriptor = FetchDescriptor<ArtEntity>(predicate: #Predicate { $0.id == idArteVazia })
-            
-            if let novaObra = try? context.fetch(descriptor).first {
-                if albumAtual.art == nil {
-                    albumAtual.art = []
-                }
-                albumAtual.art?.append(novaObra)
-            }
+         
+        let descriptor = FetchDescriptor<ArtEntity>(predicate: #Predicate { $0.id == idArteVazia })
+         
+        if let novaObra = try? context.fetch(descriptor).first {
+            self.obraAtual = novaObra
         }
-        
-        // Abre a sheet de edição
     }
 }

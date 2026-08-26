@@ -15,7 +15,6 @@ class EyeViewModel: ObservableObject {
     private let pupilSize: CGFloat = 150
     private var timer: AnyCancellable?
 
-    // Limite máximo que a pupila pode se mover sem sair do branco
     private var maxOffset: CGFloat {
         (whiteSize - pupilSize) / 2
     }

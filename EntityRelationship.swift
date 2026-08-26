@@ -45,7 +45,6 @@ final class EntityRelationship : ObservableObject{
     }
     }
     
-    //Função de adicionar uma arte vazia que será inserida posteriormente pelo usuário
     func addEmptyArt(in context:ModelContext) -> UUID {
         let id = UUID()
         let emptyArt = ArtEntity()
@@ -74,7 +73,6 @@ final class EntityRelationship : ObservableObject{
         obra.imgArt = obra.imgArt
     }
     
-    // Reflexões
     func addReflection(text: String, to artwork: ArtEntity) {
         let reflection = ReflectionEntity()
         reflection.textReflx = text
@@ -83,18 +81,7 @@ final class EntityRelationship : ObservableObject{
         context.insert(reflection)
     }
     
-    // Álbuns
-//    func createAlbum(name: String, artworks: [ArtEntity]) {
-//        let album = AlbumEntity()
-//        album.idAlbum = UUID()
-//        album.nameAlbum = name
-//        album.imgAlbum = artworks.first?.imgArt
-//        album.art = []  
-//        context.insert(album)
-//        for artwork in artworks {
-//            album.art?.append(artwork)
-//        }
-//    }
+  
     
     func deleteAlbum(_ album: AlbumEntity) {
         context.delete(album)

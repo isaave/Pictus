@@ -102,22 +102,21 @@ struct AllAlbunsView: View {
                         spacing: 16
                     ) {
                         ForEach(filteredAlbuns, id: \.idAlbum) { album in
-                            if let idAlbum = album.idAlbum {
+                            
                                 NavigationLink {
-                                    AlbunsView(idAlbum: idAlbum)
+                                    AlbunsView(idAlbum: album.idAlbum)
                                 } label: {
-                                    let obrasDoAlbum = album.art ?? []
-                                    let primeiraImagemValida = obrasDoAlbum.compactMap { $0.imgArt }.first
-
-                                    AlbumCover(
-                                        albumName: album.nameAlbum ?? "Sem nome",
-                                        coverData: primeiraImagemValida,
-                                        coverWidth: 175,
-                                        coverHeight: 210
-                                    )
+                                    AlbumCover(albumName: album.nameAlbum ?? "Nome",coverData: album.imgAlbum, coverWidth: 150, coverHeight: 200,)
+                                        .contextMenu{
+                                            Button(role:.destructive){
+                                                context.delete(album)
+                                            } label: {
+                                                Label("Apagar Álbum",systemImage: "trash")
+                                            }
+                                        }
                                 }
                                 .buttonStyle(.plain)
-                            }
+                            
                         }
                     }
                     .padding(.horizontal, 16)
@@ -136,8 +135,3 @@ struct AllAlbunsView: View {
     }
 }
 
-#Preview {
-    AllAlbunsView()
-        // O SwiftData precisa do modelContainer no Preview
-        .modelContainer(for: AlbumEntity.self, inMemory: true)
-}

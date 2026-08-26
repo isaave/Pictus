@@ -25,10 +25,13 @@ struct WorkOfDay: View {
         return obras.first(where: { $0.origin == "Descobertas" }) ?? obras.first
     }
     
+    @Query(sort:\AlbumEntity.idAlbum,order: .reverse)
+    var albums: [AlbumEntity]
+    
+ 
     var body: some View {
         Group {
             if obras.isEmpty {
-                // Especificando explicitamente o namespace para evitar conflito com TableColumn
                 SwiftUI.ContentUnavailableView(
                     "Nenhuma obra encontrada",
                     systemImage: "photo.on.rectangle.angled"
@@ -73,7 +76,6 @@ struct WorkOfDayContentView: View {
         self._viewModel = ObservedObject(wrappedValue: viewModel)
         
         let obraID = obra.id
-        // Filtrando reflexões vinculadas à obra atual pelo ID
         _reflexoesSalvas = Query(
             filter: #Predicate<ReflectionEntity> { reflexao in
                 reflexao.art?.id == obraID
@@ -241,10 +243,26 @@ struct WorkOfDayContentView: View {
                         }
                         .sheet(isPresented: $upSheet) {
                             AlbumSelector(
-                               selectedAlbums: $selectedAlbums, onConfirm: {
+                                selectedAlbums: $selectedAlbums,
+                                onConfirm: {
+                                    let descriptor = FetchDescriptor<AlbumEntity>()
+                                    if let todosAlbuns = try? modelContext.fetch(descriptor) {
+                                        
+                                        let albunsSelecionados = todosAlbuns.filter { album in
+                                            return selectedAlbums.contains(album.idAlbum)
+                                        }
+                                        
+                                        for album in albunsSelecionados {
+                                            
+                                            if !album.art.contains(where: { $0.id == obraAtual.id }) {
+                                                album.art.append(obraAtual)
+                                            }
+                                        }
+                                        
+                                        try? modelContext.save()
+                                    }
                                     upSheet = false
                                 }
-                                
                             )
                         }
                     }
