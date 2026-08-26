@@ -6,7 +6,7 @@
 //
 //
 
-public import Foundation
+internal import Foundation
 public import SwiftData
 
 

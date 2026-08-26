@@ -6,22 +6,22 @@
 //
 
 import SwiftUI
-import SwiftData
+internal import SwiftData
 
 struct AlbunsView: View {
     
     @Environment(\.modelContext) private var context
-    
+    @EnvironmentObject var viewModel: EntityRelationship
     @Query var albunsEntities: [AlbumEntity]
     @Query var obrasEntities: [ArtEntity]
     
     @Environment(\.dismiss) private var dismiss
     
-    let idAlbum: UUID
+    public let idAlbum: UUID
     let columns = [GridItem(.flexible()), GridItem(.flexible())]
     
     @State var searchText = ""
-    @State private var idNovaArteParaEditar: UUID? = nil
+    @State var obraAtual : ArtEntity
     
     var albumAtual: AlbumEntity? {
         return albunsEntities.first { $0.idAlbum == idAlbum }
@@ -97,7 +97,7 @@ struct AlbunsView: View {
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(filteredObras, id: \.id) { obra in
                             NavigationLink {
-                                WorkOfDayContentView(obraAtual: obra)
+                                WorkOfDayContentView(obraAtual: obra,viewModel: viewModel)
                             } label: {
                                 ArtPreview(
                                     artName: obra.nameArt ?? "Sem Título",
@@ -118,24 +118,19 @@ struct AlbunsView: View {
         // CORREÇÃO 4: Atualização de modificador depreciado
         .toolbar(.hidden, for: .navigationBar)
         .sheet(isPresented: Binding(
-            get: { idNovaArteParaEditar != nil },
+            get: { obraAtual != nil },
             set: { seAberto in
-                if !seAberto { idNovaArteParaEditar = nil }
+                if !seAberto { obraAtual = ArtEntity() }
             }
         )) {
-            if let uuid = idNovaArteParaEditar {
-                NewArtView(obraID: uuid)
-            }
+         NewArtView(obraAtual: obraAtual)
         }
     }
     
     private func tratarCriacaoObraManual() {
-        // Cria a obra vazia no banco de dados e pega o UUID
-        let idArteVazia = ArtRelationship().addEmptyArt(in: context)
+        let idArteVazia = EntityRelationship(context: context).addEmptyArt(in: context)
         
-        // CORREÇÃO 5: Lógica de vinculação da obra ao álbum
         if let albumAtual = albumAtual {
-            // Busca a obra recém-criada para adicioná-la ao array do álbum atual
             let descriptor = FetchDescriptor<ArtEntity>(predicate: #Predicate { $0.id == idArteVazia })
             
             if let novaObra = try? context.fetch(descriptor).first {
@@ -147,6 +142,5 @@ struct AlbunsView: View {
         }
         
         // Abre a sheet de edição
-        idNovaArteParaEditar = idArteVazia
     }
 }

@@ -6,7 +6,7 @@
 //
 //
 
-public import Foundation
+internal import Foundation
 public import SwiftData
 
 
@@ -15,8 +15,10 @@ public import SwiftData
     var imgAlbum: Data?
     var nameAlbum: String?
     @Relationship(inverse: \ArtEntity.albuns) var art: [ArtEntity]?
+    
     public init() {
-
+        idAlbum = UUID()
+       
     }
     
 }

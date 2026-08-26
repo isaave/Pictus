@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct ReflectionCard: View {
-    @ObservedObject var obraAtual: ArtEntity
-    @ObservedObject var viewModel: CoreDataRelationshipViewModel
+    var obraAtual: ArtEntity
+    @ObservedObject var viewModel: EntityRelationship
+
     var hasButton : Bool
     @State private var reflection = ""
     @State private var wantsHelp: Bool = false
@@ -77,7 +78,7 @@ struct ReflectionCard: View {
                             let textoReflexao = reflection.trimmingCharacters(in: .whitespacesAndNewlines)
                             
                             if !textoReflexao.isEmpty {
-                                viewModel.addReflection(rfx: textoReflexao, obra: obraAtual)
+                                viewModel.addReflection(text: textoReflexao, to: obraAtual)
                             }
                             
                             hasDiscovered = true

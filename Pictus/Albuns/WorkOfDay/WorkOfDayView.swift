@@ -3,19 +3,17 @@
 //  Pictus
 //
 //  Created by Andre on 18/08/26.
+//  Refactored for SwiftData on 25/08/26.
 //
 
 import SwiftUI
-import CoreData
+internal import SwiftData
 
 struct WorkOfDay: View {
-    @Environment(\.managedObjectContext) private var viewContext
-//    @EnvironmentObject var viewModel: CoreDataRelationshipViewModel
-    
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \ArtEntity.dateArt, ascending: false)]
-    )
-    var obras: FetchedResults<ArtEntity>
+    @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject var viewModel: EntityRelationship
+    @Query(sort: \ArtEntity.dateArt, order: .reverse)
+    var obras: [ArtEntity]
     
     @AppStorage("idObraDoDia") private var idObraDoDia: String = ""
     
@@ -43,9 +41,9 @@ struct WorkOfDay: View {
         .navigationTitle("Obra do dia")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button{
+                Button {
                     print("Add")
-                }label: {
+                } label: {
                     Image(systemName: "ellipsis")
                 }
             }
@@ -53,23 +51,39 @@ struct WorkOfDay: View {
         .ignoresSafeArea(edges: .top)
     }
 }
+
 struct WorkOfDayContentView: View {
-    @Environment(\.colorScheme) var colorScheme
-    @Environment(\.managedObjectContext) private var viewContext
     
-    @ObservedObject var obraAtual: ArtEntity
-//    @ObservedObject var viewModel: CoreDataRelationshipViewModel
+    var obraAtual: ArtEntity
+    @ObservedObject var viewModel: EntityRelationship
+    
+    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.modelContext) private var modelContext
     
     @AppStorage("alreadyOpenedAlert") private var alreadyOpenedAlert: Bool = false
     @State private var showAlert = false
-    @State private var reflexoesSalvas: [ReflectionEntity] = []
+    
+    @Query var reflexoesSalvas: [ReflectionEntity]
+    
+    init(obraAtual: ArtEntity, viewModel: EntityRelationship) {
+        self.obraAtual = obraAtual
+        self.viewModel = viewModel
+        
+        let obraID = obraAtual.persistentModelID
+        _reflexoesSalvas = Query(
+            filter: #Predicate<ReflectionEntity> { $0.art?.persistentModelID == obraID },
+            sort: [SortDescriptor<ReflectionEntity>(\.dateReflx, order: .reverse)]
+        )
+    }
+    
+    private var isContextReleased: Bool {
+        obraAtual.ctxReleased ?? false
+    }
    
     var body: some View {
-        
         let autor = obraAtual.nameAuthor ?? "Desconhecido"
         let local = obraAtual.local ?? ""
         let ano = obraAtual.dateArt?.formatted(.dateTime.year()) ?? ""
-        
         
         ScrollView {
             VStack(spacing: 16) {
@@ -99,22 +113,18 @@ struct WorkOfDayContentView: View {
                         .padding(16)
                     }
                 
-                
-                
                 VStack(alignment: .leading, spacing: 16) {
-                    
-                    
-                    if obraAtual.origin == "Descobertas"{
-                        Group{
+                    if obraAtual.origin == "Descobertas" {
+                        Group {
                             Text("Sobre a obra")
                                 .font(.title2.bold())
                             
                             VStack(alignment: .leading, spacing: 8) {
                                 Text(obraAtual.ctxArt ?? "Conteúdo da arte")
                                     .font(.body)
-                                    .lineLimit(obraAtual.ctxReleased ? nil : 4)
+                                    .lineLimit(isContextReleased ? nil : 4)
                                     .overlay(alignment: .bottom) {
-                                        if !obraAtual.ctxReleased {
+                                        if !isContextReleased {
                                             LinearGradient(
                                                 colors: [
                                                     .clear,
@@ -128,7 +138,6 @@ struct WorkOfDayContentView: View {
                                         }
                                     }
                             }
-                            
                         }
                         
                         HStack {
@@ -137,15 +146,14 @@ struct WorkOfDayContentView: View {
                                 if !alreadyOpenedAlert {
                                     showAlert.toggle()
                                 } else {
-                                    obraAtual.ctxReleased.toggle()
-                                    try? viewContext.save()
+                                    alternarLiberacaoContexto()
                                 }
                             } label: {
                                 HStack(spacing: 6) {
-                                    Image(systemName: obraAtual.ctxReleased ? "lock.open.fill" : "lock.fill")
+                                    Image(systemName: isContextReleased ? "lock.open.fill" : "lock.fill")
                                         .contentTransition(.symbolEffect(.replace))
                                     
-                                    Text(obraAtual.ctxReleased ? "Ver menos" : "Ver mais")
+                                    Text(isContextReleased ? "Ver menos" : "Ver mais")
                                         .fontWeight(.semibold)
                                         .foregroundStyle(colorScheme == .dark ? .white : .black)
                                 }
@@ -153,9 +161,8 @@ struct WorkOfDayContentView: View {
                         }
                         .padding(.top, 4)
                     }
-                    }
                     
-                    ReflectionCard(obraAtual: obraAtual, viewModel: viewModel,hasButton: true)
+                    ReflectionCard(obraAtual: obraAtual, viewModel: viewModel, hasButton: true)
                     
                     if !reflexoesSalvas.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
@@ -187,13 +194,9 @@ struct WorkOfDayContentView: View {
                 .padding(16)
             }
             .navigationTitle("\(obraAtual.nameArt ?? "Desconhecido")")
-            
-            .ignoresSafeArea(edges:.top)
+            .ignoresSafeArea(edges: .top)
             .scrollDismissesKeyboard(.interactively)
-            .onAppear {
-                carregarReflexoes()
-            }
-            .overlay(
+            .overlay(alignment: .center) {
                 Group {
                     if showAlert {
                         ZStack {
@@ -208,8 +211,7 @@ struct WorkOfDayContentView: View {
                                 confirmTitle: "Sim",
                                 cancelTitle: "Não",
                                 onConfirm: {
-                                    obraAtual.ctxReleased.toggle()
-                                    try? viewContext.save()
+                                    alternarLiberacaoContexto()
                                     showAlert = false
                                     alreadyOpenedAlert = true
                                 },
@@ -220,10 +222,11 @@ struct WorkOfDayContentView: View {
                         }
                     }
                 }
-            )
+            }
+        }
     }
     
-    private func carregarReflexoes() {
-        reflexoesSalvas = viewModel.fetchReflexoesDaObra(obra: obraAtual)
+    private func alternarLiberacaoContexto() {
+        obraAtual.ctxReleased = !isContextReleased
     }
 }

@@ -7,7 +7,7 @@
 
 import SwiftUI
 import CoreData
-import SwiftData
+internal import SwiftData
 
 enum SegmentedClasses: String, CaseIterable {
     case all = "Todos"
@@ -18,7 +18,7 @@ enum SegmentedClasses: String, CaseIterable {
 struct CollectionView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.modelContext) private var context
-        
+    
     @State private var selectedMode: SegmentedClasses = .all
     
     @State private var searchText = ""
@@ -33,17 +33,17 @@ struct CollectionView: View {
     @State private var mostrarOnboarding: Bool = false
     @State private var idNovaArteParaEditar: UUID? = nil
     @State private var isDiscovering: Bool = false
-    
+    @State private var abrirNovaObra : ArtEntity?
     var descriptor = FetchDescriptor<ArtEntity>()
     @State private var funcObras = ObrasObjects()
     @Query var obrasEntities: [ArtEntity]
-    
+    @EnvironmentObject var viewModel: EntityRelationship
     let obrasColumns = [
         GridItem(.flexible()),
         GridItem(.flexible())
     ]
-
-    var art = ArtRelationship()
+    
+    //    var art = EntityRelationship(context: context)
     
     var filteredObras: [ArtEntity] {
         var result = obrasEntities.filter { obra in
@@ -51,7 +51,7 @@ struct CollectionView: View {
             let temImagem = obra.imgArt != nil
             return temNome || temImagem
         }
-
+        
         switch selectedMode {
         case .all:
             break
@@ -60,21 +60,21 @@ struct CollectionView: View {
         case .personal:
             result = result.filter { $0.origin == "Minhas" }
         }
-
+        
         if !searchText.isEmpty {
             result = result.filter { obra in
                 let nome = obra.nameArt ?? ""
                 let autor = obra.nameAuthor ?? ""
                 let local = obra.local ?? ""
                 return nome.localizedCaseInsensitiveContains(searchText) ||
-                       autor.localizedCaseInsensitiveContains(searchText) ||
-                       local.localizedCaseInsensitiveContains(searchText)
+                autor.localizedCaseInsensitiveContains(searchText) ||
+                local.localizedCaseInsensitiveContains(searchText)
             }
         }
-
+        
         return result
     }
-
+    
     var body: some View {
         NavigationStack {
             if isDiscovering {
@@ -99,11 +99,11 @@ struct CollectionView: View {
                                 .disabled(isDiscovering)
                             }
                             .padding(.horizontal)
-
+                            
                             // Segmented Control
                             ArtSegmentedControl(selection: $selectedMode)
                                 .padding(.horizontal)
-
+                            
                             // Álbuns
                             NavigationLink(destination: AllAlbunsView()) {
                                 HStack {
@@ -118,9 +118,9 @@ struct CollectionView: View {
                                 .padding(.horizontal)
                             }
                             .buttonStyle(.plain)
-
-                            AlbumHorizontalView(Vm: viewModel)
-
+                            
+                            AlbumHorizontalView(viewModel: _viewModel)
+                            
                             // Obras
                             HStack {
                                 Text("Obras")
@@ -130,7 +130,7 @@ struct CollectionView: View {
                                 
                                 BtnAdd(
                                     ButtonAction: {
-                                        
+                                        abrirNovaObra = ArtEntity()
                                     },
                                     icon: "plus"
                                 )
@@ -138,7 +138,7 @@ struct CollectionView: View {
                             }
                             .padding(.horizontal)
                             .padding(.top, 10)
-
+                            
                             if filteredObras.isEmpty {
                                 VStack(spacing: 10) {
                                     Image(systemName: "photo.on.rectangle.angled")
@@ -160,8 +160,8 @@ struct CollectionView: View {
                                 .padding(.horizontal)
                             } else {
                                 LazyVGrid(columns: obrasColumns, spacing: 12) {
-                                    ForEach(filteredObras, id: \.objectID) { obra in
-                                        NavigationLink(value: obra.objectID) {
+                                    ForEach(filteredObras, id: \.id) { obra in
+                                        NavigationLink(destination: WorkOfDayContentView(obraAtual: obra, viewModel: viewModel)) {
                                             ArtPreview(
                                                 artName: obra.nameArt ?? "Sem Título",
                                                 authorName: obra.nameAuthor ?? obra.local ?? "Desconhecido",
@@ -177,7 +177,7 @@ struct CollectionView: View {
                         }
                         .padding(.bottom, 30)
                     }
-                     
+                    
                     // Toast Feedback
                     if mostrarToast {
                         Text(toastMessage)
@@ -195,25 +195,16 @@ struct CollectionView: View {
                 }
                 .searchable(text: $searchText, prompt: "Buscar obras e álbuns")
                 .navigationDestination(for: UUID.self) { idAlbum in
-                    AlbunsView(idAlbum: idAlbum)
-                        .environmentObject(viewModel)
+                    AlbunsView(idAlbum: idAlbum,obraAtual: ArtEntity())
+                    
                 }
                 .navigationDestination(isPresented: $irParaObraDoDia) {
                     WorkOfDay()
                 }
-                .sheet(isPresented: Binding(
-                    get: { idNovaArteParaEditar != nil },
-                    set: { seAberto in
-                        if !seAberto { idNovaArteParaEditar = nil }
-                    }
-                )) {
-                    if let uuid = idNovaArteParaEditar {
-                        NewArtView(viewModel: viewModel, obraID: uuid)
-                    }
+                .sheet(item: $abrirNovaObra) { obra in
+                    NewArtView(obraAtual: obra )
                 }
-                .onAppear {
-                    verificarESortearObraDoDia()
-                }
+                
             }
         }
         .onAppear {
@@ -225,6 +216,8 @@ struct CollectionView: View {
             onboardingView
         }
     }
+       
+
     
     // MARK: - View de Onboarding
     private var onboardingView: some View {
@@ -330,7 +323,7 @@ struct CollectionView: View {
     // MARK: - Métodos Auxiliares
 
     private func tratarCriacaoObraManual() {
-        let idArteVazia = art.addEmptyArt(in: context)
+        let idArteVazia = EntityRelationship(context: context).addEmptyArt(in: context)
         idNovaArteParaEditar = idArteVazia
          
         let hojeString = Date().formatted(date: .numeric, time: .omitted)
@@ -370,3 +363,4 @@ struct CollectionView: View {
         }
     }
 }
+

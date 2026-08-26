@@ -5,7 +5,7 @@
 //  Created by Andre on 17/08/26.
 //
 
-import Foundation
+internal import Foundation
 import SwiftUI
 
 class Obras{

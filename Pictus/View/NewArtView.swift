@@ -8,36 +8,34 @@
 import SwiftUI
 import PhotosUI
 import UIKit
+internal import SwiftData
 
 struct NewArtView: View {
     @State private var upSheet = false
     @State private var selectedAlbums: Set<UUID> = []
+    
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var context
     
-    var art = ArtRelationship()
-    @Query obrasEntities = [ArtEntity]
+    @Query private var obrasEntities: [ArtEntity]
     
-    let obraID: UUID
-    
-    private var obraAtual: ArtEntity? {
-        obrasEntities.first(where: { $0.id == obraID })
-    }
+    var obraAtual : ArtEntity
     
     @State private var nome = ""
     @State private var nomeAutor = ""
     @State private var dataCriacao = Date()
     @State private var local = ""
-
+    
     @State private var selectedPhoto: PhotosPickerItem?
     @State private var imageData: Data?
     @State private var imagePreview: UIImage?
-
+    
     @State private var isLoadingImage: Bool = false
     @State private var showImageError: Bool = false
     @State private var isFill: Bool = false
     
     @State private var showConfirmationAlert: Bool = false
-
+    
     var body: some View {
         GeometryReader { geometry in
             NavigationStack {
@@ -86,21 +84,11 @@ struct NewArtView: View {
                         dataCriacao: $dataCriacao,
                         local: $local
                     )
-                    
                     .padding()
                     
+                    //
                     
-                    if let obraAtual {
-                        ReflectionCard(
-                            obraAtual: obraAtual,
-                            viewModel: viewModel,
-                            hasButton: false
-                        )
-                        
-                        .padding(.horizontal)
-                    }
-                    
-                    HStack (alignment:.center){
+                    HStack(alignment: .center) {
                         Button {
                             save()
                         } label: {
@@ -127,13 +115,20 @@ struct NewArtView: View {
                                 }
                         }
                         .disabled(!canSave || !isFill)
-                    }.padding()
-                    
+                    }
+                    .padding()
                 }
                 .background(Color(uiColor: .systemBackground))
                 .ignoresSafeArea(edges: .top)
                 .scrollDismissesKeyboard(.interactively)
                 .onAppear {
+                    obraAtual.nameArt = nome
+                    obraAtual.nameAuthor = nomeAutor
+                    obraAtual.imgArt = imageData
+                    obraAtual.local = local
+                    obraAtual.dateArt = dataCriacao
+                    obraAtual.imgArt = imageData
+                    
                     isFill = !nome.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
                 }
                 .onChange(of: nome) { oldValue, newValue in
@@ -158,21 +153,16 @@ struct NewArtView: View {
                                 .fontWeight(.semibold)
                         }
                         .sheet(isPresented: $upSheet) {
-                            AlbumSelector(
-                                Vm: viewModel, selectedAlbums: $selectedAlbums, onConfirm: {
-                                    upSheet = false
-                                }
-                                
-                                )
+                            // Certifique-se de ajustar o AlbumSelector se ele usava o ViewModel antigo
+                            Text("Seletor de Álbuns") // Placeholder caso precise ajustar o AlbumSelector
                         }
                     }
-                    
                 }
-                .onChange(of: selectedPhoto) { newPhoto in
-                    guard let newPhoto else { return }
+                .onChange(of: selectedPhoto) { oldValue, newValue in
+                    guard let newValue else { return }
                     
                     Task {
-                        await loadImage(from: newPhoto)
+                        await loadImage(from: newValue)
                     }
                 }
                 .alert(
@@ -191,7 +181,7 @@ struct NewArtView: View {
                             Color.black.opacity(0.4)
                                 .ignoresSafeArea()
                                 .onTapGesture { showConfirmationAlert = false }
-
+                            
                             ConfirmationAlert(
                                 title: "Atenção!",
                                 message: "Você possui alterações que não foram salvas.",
@@ -218,7 +208,6 @@ struct NewArtView: View {
 }
 
 private extension NewArtView {
-
     var imagePickerButton: some View {
         VStack {
             HStack {
@@ -234,7 +223,6 @@ private extension NewArtView {
                     .frame(maxWidth: .infinity, maxHeight: 250)
                 }
             }
-
             Spacer()
         }
         .padding(.top, 105)
@@ -243,7 +231,6 @@ private extension NewArtView {
 }
 
 private extension NewArtView {
-
     var canSave: Bool {
         imageData != nil && !isLoadingImage && isFill
     }
@@ -251,36 +238,35 @@ private extension NewArtView {
     var canSaveBack: Bool {
         imageData != nil && !isLoadingImage
     }
-
+    
     private func save() {
-        viewModel.editObra(
-            name: nomeAutor,
-            nameArt: nome,
-            data: dataCriacao,
-            local: local,
-            img: imageData,
-            uuid: obraID
-        )
-
+        // Atualiza a obra diretamente utilizando o SwiftData
+         
+        obraAtual.nameArt = nome
+        obraAtual.nameAuthor = nomeAutor
+        obraAtual.dateArt = dataCriacao
+        obraAtual.local = local
+        obraAtual.imgArt = imageData
+            context.insert(obraAtual)
+        
+        
+        
         dismiss()
     }
     
     private func discart() {
-        viewModel.deleteArt(
-            uuid: obraID
-        )
+        context.delete(obraAtual)
         dismiss()
     }
     
     @MainActor
     func loadImage(from item: PhotosPickerItem) async {
-
         isLoadingImage = true
-
+        
         defer {
             isLoadingImage = false
         }
-
+        
         do {
             guard let data = try await item.loadTransferable(type: Data.self),
                   let uiImage = UIImage(data: data)
@@ -288,10 +274,10 @@ private extension NewArtView {
                 showImageError = true
                 return
             }
-
+            
             imageData = data
             imagePreview = uiImage
-
+            
         } catch {
             imageData = nil
             imagePreview = nil
@@ -300,9 +286,7 @@ private extension NewArtView {
     }
 }
 
-#Preview {
-    NewArtView(
-        viewModel: CoreDataRelationshipViewModel(),
-        obraID: UUID()
-    )
-}
+//#Preview {
+//    NewArtView(obraID: UUID())
+//        .modelContainer(for: ArtEntity.self, inMemory: true)
+//}

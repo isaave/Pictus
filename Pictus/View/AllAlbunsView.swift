@@ -6,7 +6,7 @@
 //
 
 import SwiftUI
-import SwiftData
+internal import SwiftData
 
 struct AllAlbunsView: View {
     @Environment(\.dismiss) private var dismiss
@@ -102,10 +102,10 @@ struct AllAlbunsView: View {
                         spacing: 16
                     ) {
                         ForEach(filteredAlbuns, id: \.idAlbum) { album in
-                            if let idAlbum = album.idAlbum {
+                            if let idAlbum = album.idAlbum{
                                 
                                 NavigationLink {
-                                    AlbunsView(idAlbum: idAlbum)
+                                    AlbunsView(idAlbum: album.idAlbum ?? UUID(), obraAtual: ArtEntity())
                                 } label: {
                                     let obrasDoAlbum = album.art ?? []
                                     let primeiraImagemValida = obrasDoAlbum.compactMap { $0.imgArt }.first
