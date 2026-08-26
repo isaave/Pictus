@@ -225,7 +225,7 @@ struct CollectionView: View {
                     WorkOfDay()
                 }
                 .sheet(item: $abrirNovaObra) { obra in
-                    NewArtView(obraAtual: obra)
+                    NewArtView(obraAtual: obra,viewModel: viewModel)
                 }
             }
         }

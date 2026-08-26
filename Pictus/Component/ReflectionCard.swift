@@ -11,8 +11,10 @@ struct ReflectionCard: View {
     var obraAtual: ArtEntity
     @ObservedObject var viewModel: EntityRelationship
 
-    var hasButton : Bool
-    @State private var reflection = ""
+    var hasButton: Bool
+    
+    @Binding var reflection: String
+    
     @State private var wantsHelp: Bool = false
     @State private var selectedIndexes: [Int] = [0, 1, 2]
     
@@ -71,7 +73,7 @@ struct ReflectionCard: View {
                 )
                 .padding(.vertical, 8)
                 
-                if hasButton{
+                if hasButton {
                     HStack {
                         Spacer()
                         Button {
@@ -82,7 +84,7 @@ struct ReflectionCard: View {
                             }
 
                             hasDiscovered = true
-                            viewModel.marcarDiaComoUtilizado() 
+                            viewModel.marcarDiaComoUtilizado()
                             dismiss()
                         } label: {
                             Text("Adicionar Reflexão")

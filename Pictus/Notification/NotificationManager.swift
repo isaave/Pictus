@@ -72,7 +72,7 @@ final class NotificationManager {
         scheduleIfNeededToday(
             identificador: "notificacao-tarde-\(dateSuffix)",
             hour: 14,
-            minute: 0,
+            minute: 00,
             title: "Nova arte disponível!",
             body: "Não se esqueça de conferir a sua obra diária, e realizar uma reflexão.",
             jaUtilizouHoje: jaUtilizouHoje

@@ -81,7 +81,7 @@ struct AllAlbunsView: View {
 
             ScrollView {
                 if filteredAlbuns.isEmpty {
-                    VStack(spacing: 12) {
+                    VStack(spacing: 8) {
                         Image(systemName: "rectangle.stack")
                             .font(.system(size: 40))
                             .foregroundStyle(.secondary)
@@ -102,11 +102,12 @@ struct AllAlbunsView: View {
                         spacing: 16
                     ) {
                         ForEach(filteredAlbuns, id: \.idAlbum) { album in
-                            
+                            let primeiraObraComImagem = album.art.first(where: { $0.imgArt != nil })
+                            let imgData = primeiraObraComImagem?.imgArt
                                 NavigationLink {
                                     AlbunsView(idAlbum: album.idAlbum)
                                 } label: {
-                                    AlbumCover(albumName: album.nameAlbum ?? "Nome",coverData: album.imgAlbum, coverWidth: 150, coverHeight: 200,)
+                                    AlbumCover(albumName: album.nameAlbum ?? "Nome",coverData: imgData, coverWidth: 174, coverHeight: 228,)
                                         .contextMenu{
                                             Button(role:.destructive){
                                                 context.delete(album)

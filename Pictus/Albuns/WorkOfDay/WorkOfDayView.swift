@@ -28,7 +28,11 @@ struct WorkOfDay: View {
     @Query(sort:\AlbumEntity.idAlbum,order: .reverse)
     var albums: [AlbumEntity]
     
- 
+    @State private var mostrarImagemZoom = false
+       @State private var zoomScale: CGFloat = 1
+       @State private var zoomOffset: CGSize = .zero
+       @GestureState private var pinchMagnification: CGFloat = 1
+    
     var body: some View {
         Group {
             if obras.isEmpty {
@@ -58,18 +62,26 @@ struct WorkOfDay: View {
 
 struct WorkOfDayContentView: View {
     @State private var upSheet = false
-        @State private var selectedAlbums: Set<UUID> = []
+    @State private var selectedAlbums: Set<UUID> = []
         
-        @Environment(\.colorScheme) var colorScheme
-        @Environment(\.modelContext) private var modelContext
+    @Environment(\.colorScheme) var colorScheme
+    @Environment(\.modelContext) private var modelContext
+    @State private var mostrarImagemZoom = false
+       @State private var zoomScale: CGFloat = 1
+       @State private var zoomOffset: CGSize = .zero
+       @GestureState private var pinchMagnification: CGFloat = 1
+    var obraAtual: ArtEntity
+    @ObservedObject var viewModel: EntityRelationship
         
-        var obraAtual: ArtEntity
-        @ObservedObject var viewModel: EntityRelationship
+    @State private var alreadyOpenedAlert: Bool = false
+    @State private var showAlert = false
+    
+    // 1. ADICIONADO: Estado para o texto da reflexão nesta View
+    @State private var reflectionText: String = ""
+    
+    
         
-        @State private var alreadyOpenedAlert: Bool = false
-        @State private var showAlert = false
-        
-        @Query private var reflexoesSalvas: [ReflectionEntity]
+    @Query private var reflexoesSalvas: [ReflectionEntity]
     
     init(obra: ArtEntity, viewModel: EntityRelationship) {
         self.obraAtual = obra
@@ -88,6 +100,9 @@ struct WorkOfDayContentView: View {
         obraAtual.ctxReleased ?? false
     }
    
+    private var uiImageAtual: UIImage {
+          UIImage(data: obraAtual.imgArt ?? Data()) ?? UIImage(systemName: "photo")!
+      }
     var body: some View {
         let autor = obraAtual.nameAuthor ?? "Desconhecido"
         let local = obraAtual.local ?? ""
@@ -95,7 +110,7 @@ struct WorkOfDayContentView: View {
          
         ScrollView {
             VStack(spacing: 16) {
-                Image(uiImage: UIImage(data: obraAtual.imgArt ?? Data()) ?? UIImage(systemName: "photo")!)
+                Image(uiImage: uiImageAtual)
                     .resizable()
                     .scaledToFit()
                     .overlay {
@@ -109,6 +124,7 @@ struct WorkOfDayContentView: View {
                         )
                         .allowsHitTesting(false)
                     }
+
                     .overlay(alignment: .bottomLeading) {
                         VStack(alignment: .leading) {
                             Text(obraAtual.nameArt ?? "Desconhecido")
@@ -120,6 +136,17 @@ struct WorkOfDayContentView: View {
                         }
                         .padding(16)
                     }
+                    .overlay(alignment: .bottomTrailing) {
+                                            Button {
+                                                mostrarImagemZoom = true
+                                            } label: {
+                                                Image(systemName: "arrow.up.left.and.arrow.down.right")
+                                                    .font(.system(size: 18, weight: .semibold))
+                                                    .foregroundStyle(.white)
+                                            }
+                                            .padding(16)
+                                        }
+                                     
                  
                 VStack(alignment: .leading, spacing: 16) {
                     if obraAtual.origin == "Descobertas" {
@@ -170,7 +197,12 @@ struct WorkOfDayContentView: View {
                         .padding(.top, 4)
                     }
                      
-                    ReflectionCard(obraAtual: obraAtual, viewModel: viewModel, hasButton: true)
+                    ReflectionCard(
+                        obraAtual: obraAtual,
+                        viewModel: viewModel,
+                        hasButton: true,
+                        reflection: $reflectionText
+                    )
                      
                     if !reflexoesSalvas.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
@@ -233,40 +265,96 @@ struct WorkOfDayContentView: View {
             }
         }
         .interactiveDismissDisabled()
-                .toolbar {
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            upSheet.toggle()
-                        } label: {
-                            Image(systemName: "folder.fill.badge.plus")
-                                .fontWeight(.semibold)
-                        }
-                        .sheet(isPresented: $upSheet) {
-                            AlbumSelector(
-                                selectedAlbums: $selectedAlbums,
-                                onConfirm: {
-                                    let descriptor = FetchDescriptor<AlbumEntity>()
-                                    if let todosAlbuns = try? modelContext.fetch(descriptor) {
-                                        
-                                        let albunsSelecionados = todosAlbuns.filter { album in
-                                            return selectedAlbums.contains(album.idAlbum)
-                                        }
-                                        
-                                        for album in albunsSelecionados {
-                                            
-                                            if !album.art.contains(where: { $0.id == obraAtual.id }) {
-                                                album.art.append(obraAtual)
-                                            }
-                                        }
-                                        
-                                        try? modelContext.save()
-                                    }
-                                    upSheet = false
-                                }
-                            )
-                        }
-                    }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    upSheet.toggle()
+                } label: {
+                    Image(systemName: "folder.fill.badge.plus")
+                        .fontWeight(.semibold)
                 }
+                .sheet(isPresented: $upSheet) {
+                    AlbumSelector(
+                        selectedAlbums: $selectedAlbums,
+                        onConfirm: {
+                            let descriptor = FetchDescriptor<AlbumEntity>()
+                            if let todosAlbuns = try? modelContext.fetch(descriptor) {
+                                
+                                let albunsSelecionados = todosAlbuns.filter { album in
+                                    return selectedAlbums.contains(album.idAlbum)
+                                }
+                                
+                                for album in albunsSelecionados {
+                                    
+                                    if !album.art.contains(where: { $0.id == obraAtual.id }) {
+                                        album.art.append(obraAtual)
+                                    }
+                                }
+                                
+                                try? modelContext.save()
+                            }
+                            upSheet = false
+                        }
+                    )
+                }
+            }
+        }
+        .fullScreenCover(isPresented: $mostrarImagemZoom) {
+                           ZStack {
+                               Color.black.ignoresSafeArea()
+
+                               Image(uiImage: uiImageAtual)
+                                   .resizable()
+                                   .scaledToFit()
+                                   .scaleEffect(zoomScale * pinchMagnification)
+                                   .offset(zoomOffset)
+                                   .gesture(
+                                       MagnificationGesture()
+                                           .updating($pinchMagnification) { value, state, _ in
+                                               state = value
+                                           }
+                                           .onEnded { value in
+                                               zoomScale = max(1, min(zoomScale * value, 5))
+                                           }
+                                   )
+                                   .simultaneousGesture(
+                                       DragGesture()
+                                           .onChanged { value in
+                                               if zoomScale > 1 { zoomOffset = value.translation }
+                                           }
+                                           .onEnded { _ in
+                                               if zoomScale <= 1 { zoomOffset = .zero }
+                                           }
+                                   )
+                                   .onTapGesture(count: 2) {
+                                       withAnimation(.spring()) {
+                                           if zoomScale > 1 {
+                                               zoomScale = 1
+                                               zoomOffset = .zero
+                                           } else {
+                                               zoomScale = 2.5
+                                           }
+                                       }
+                                   }
+
+                               VStack {
+                                   HStack {
+                                       Spacer()
+                                       Button {
+                                           zoomScale = 1
+                                           zoomOffset = .zero
+                                           mostrarImagemZoom = false
+                                       } label: {
+                                           Image(systemName: "xmark.circle.fill")
+                                               .font(.title)
+                                               .foregroundStyle(.white, .black.opacity(0.5))
+                                       }
+                                       .padding()
+                                   }
+                                   Spacer()
+                               }
+                           }
+                       }
     }
      
     private func alternarLiberacaoContexto() {

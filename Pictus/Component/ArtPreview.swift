@@ -23,8 +23,9 @@ struct ArtPreview: View {
             if let uiImage {
                 Image(uiImage: uiImage)
                     .resizable()
+                    .scaledToFill()
                     .frame(width: 174, height: 228)
-                    .scaledToFit()
+                    
                     .clipped()
             } else {
                 ZStack {

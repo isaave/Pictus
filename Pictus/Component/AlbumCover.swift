@@ -6,19 +6,19 @@
 //
 
 import SwiftUI
+
 struct AlbumCover: View {
     @State var albumName: String
     var coverData: Data? = nil
     var coverWidth: CGFloat
     var coverHeight: CGFloat
 
-     var body: some View {
+    var body: some View {
         albumImage
             .resizable()
             .scaledToFill()
             .frame(width: coverWidth, height: coverHeight)
-            .cornerRadius(10)
-            .clipped()  
+            
             .overlay(
                 Rectangle()
                     .frame(width: coverWidth, height: coverHeight * 0.24)
@@ -34,6 +34,8 @@ struct AlbumCover: View {
                     .fontWeight(.semibold)
                     .padding(.top, coverHeight * 0.71)
             )
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .contentShape(RoundedRectangle(cornerRadius: 10))
     }
 
     private var albumImage: Image {
@@ -42,9 +44,10 @@ struct AlbumCover: View {
             return Image(uiImage: uiImage)
         }
 
-        return Image("Image")
+        return Image("Image") 
     }
 }
+
 #Preview {
     AlbumCover(albumName: "Grafite", coverWidth: 175, coverHeight: 210)
 }

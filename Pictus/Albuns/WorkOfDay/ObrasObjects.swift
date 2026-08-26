@@ -10,7 +10,6 @@ import UIKit
 struct ObrasObjects{
     var alreadyRoller = false
     
-    
     var obrasDesconhecidas: [ArtEntity] = [
         ArtEntity(
             name: "Stánczyk",

@@ -63,8 +63,9 @@ struct AlbumHorizontalView: View {
             if let imgData, let uiImage = UIImage(data: imgData) {
                 Image(uiImage: uiImage)
                     .resizable()
-                    .frame(width: 150, height: 150)
                     .scaledToFill()
+                    .frame(width: 150, height: 150)
+                   
             } else {
                 Rectangle()
                     .fill(Color.gray.opacity(0.2))
