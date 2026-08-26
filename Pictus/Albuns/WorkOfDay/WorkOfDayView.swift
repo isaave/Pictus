@@ -28,12 +28,13 @@ struct WorkOfDay: View {
     var body: some View {
         Group {
             if obras.isEmpty {
-                ContentUnavailableView(
+                // Especificando explicitamente o namespace para evitar conflito com TableColumn
+                SwiftUI.ContentUnavailableView(
                     "Nenhuma obra encontrada",
                     systemImage: "photo.on.rectangle.angled"
                 )
             } else if let obra = obraSelecionada {
-                WorkOfDayContentView(obraAtual: obra, viewModel: viewModel)
+                WorkOfDayContentView(obra: obra, viewModel: viewModel)
             } else {
                 ProgressView("Carregando obra...")
             }
@@ -54,24 +55,27 @@ struct WorkOfDay: View {
 
 struct WorkOfDayContentView: View {
     
-    var obraAtual: ArtEntity
-    @ObservedObject var viewModel: EntityRelationship
-    
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.modelContext) private var modelContext
+    
+    var obraAtual: ArtEntity
+    @ObservedObject var viewModel: EntityRelationship
     
     @AppStorage("alreadyOpenedAlert") private var alreadyOpenedAlert: Bool = false
     @State private var showAlert = false
     
-    @Query var reflexoesSalvas: [ReflectionEntity]
+    @Query private var reflexoesSalvas: [ReflectionEntity]
     
-    init(obraAtual: ArtEntity, viewModel: EntityRelationship) {
-        self.obraAtual = obraAtual
-        self.viewModel = viewModel
+    init(obra: ArtEntity, viewModel: EntityRelationship) {
+        self.obraAtual = obra
+        self._viewModel = ObservedObject(wrappedValue: viewModel)
         
-        let obraID = obraAtual.persistentModelID
+        let obraID = obra.id
+        // Filtrando reflexões vinculadas à obra atual pelo ID
         _reflexoesSalvas = Query(
-            filter: #Predicate<ReflectionEntity> { $0.art?.persistentModelID == obraID },
+            filter: #Predicate<ReflectionEntity> { reflexao in
+                reflexao.art?.id == obraID
+            },
             sort: [SortDescriptor<ReflectionEntity>(\.dateReflx, order: .reverse)]
         )
     }
@@ -84,7 +88,7 @@ struct WorkOfDayContentView: View {
         let autor = obraAtual.nameAuthor ?? "Desconhecido"
         let local = obraAtual.local ?? ""
         let ano = obraAtual.dateArt?.formatted(.dateTime.year()) ?? ""
-        
+         
         ScrollView {
             VStack(spacing: 16) {
                 Image(uiImage: UIImage(data: obraAtual.imgArt ?? Data()) ?? UIImage(systemName: "photo")!)
@@ -112,13 +116,13 @@ struct WorkOfDayContentView: View {
                         }
                         .padding(16)
                     }
-                
+                 
                 VStack(alignment: .leading, spacing: 16) {
                     if obraAtual.origin == "Descobertas" {
                         Group {
                             Text("Sobre a obra")
                                 .font(.title2.bold())
-                            
+                           
                             VStack(alignment: .leading, spacing: 8) {
                                 Text(obraAtual.ctxArt ?? "Conteúdo da arte")
                                     .font(.body)
@@ -152,7 +156,7 @@ struct WorkOfDayContentView: View {
                                 HStack(spacing: 6) {
                                     Image(systemName: isContextReleased ? "lock.open.fill" : "lock.fill")
                                         .contentTransition(.symbolEffect(.replace))
-                                    
+                                   
                                     Text(isContextReleased ? "Ver menos" : "Ver mais")
                                         .fontWeight(.semibold)
                                         .foregroundStyle(colorScheme == .dark ? .white : .black)
@@ -161,19 +165,19 @@ struct WorkOfDayContentView: View {
                         }
                         .padding(.top, 4)
                     }
-                    
+                     
                     ReflectionCard(obraAtual: obraAtual, viewModel: viewModel, hasButton: true)
-                    
+                     
                     if !reflexoesSalvas.isEmpty {
                         VStack(alignment: .leading, spacing: 12) {
                             Text("Minhas Reflexões")
                                 .font(.title3.bold())
-                            
+                           
                             ForEach(reflexoesSalvas, id: \.self) { item in
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(item.textReflx ?? "")
                                         .font(.body)
-                                    
+                                   
                                     if let data = item.dateReflx {
                                         Text(data.formatted(date: .abbreviated, time: .shortened))
                                             .font(.caption)
@@ -196,14 +200,14 @@ struct WorkOfDayContentView: View {
             .navigationTitle("\(obraAtual.nameArt ?? "Desconhecido")")
             .ignoresSafeArea(edges: .top)
             .scrollDismissesKeyboard(.interactively)
-            .overlay(alignment: .center) {
+            .overlay(alignment: .center){
                 Group {
                     if showAlert {
                         ZStack {
                             Color.black.opacity(0.4)
                                 .ignoresSafeArea()
                                 .onTapGesture { showAlert = false }
-                            
+                           
                             ConfirmationAlert(
                                 title: "Atenção!",
                                 message: "Acessar o contexto desta obra sem análise prévia pode impactar sua interpretação.",
@@ -225,7 +229,7 @@ struct WorkOfDayContentView: View {
             }
         }
     }
-    
+     
     private func alternarLiberacaoContexto() {
         obraAtual.ctxReleased = !isContextReleased
     }

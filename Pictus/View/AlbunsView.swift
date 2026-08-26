@@ -97,7 +97,7 @@ struct AlbunsView: View {
                     LazyVGrid(columns: columns, spacing: 16) {
                         ForEach(filteredObras, id: \.id) { obra in
                             NavigationLink {
-                                WorkOfDayContentView(obraAtual: obra,viewModel: viewModel)
+                                WorkOfDayContentView(obra: obra,viewModel: viewModel)
                             } label: {
                                 ArtPreview(
                                     artName: obra.nameArt ?? "Sem Título",

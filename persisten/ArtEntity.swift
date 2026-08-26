@@ -35,7 +35,7 @@ public class ArtEntity {
         self.imgArt = img
         self.ctxArt = ctxArt
         self.ctxReleased = ctxReleased
-        self.origin = "Minhas"
+        self.origin = origin
     }
 }
 

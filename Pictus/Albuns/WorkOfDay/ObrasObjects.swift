@@ -61,25 +61,19 @@ struct ObrasObjects{
         
     ]
     
+ 
     mutating func findObra(id: UUID){
-       if let index = obrasConhecidas.firstIndex(where: {$0.id == id}){
-            let obraEncontrada = obrasDesconhecidas[index]
-            obrasDesconhecidas.append(obraEncontrada)
-            obrasConhecidas.remove(at: index)
-            
+        if let index = obrasDesconhecidas.firstIndex(where: {$0.id == id}){
+            obrasConhecidas.append(obrasDesconhecidas[index])
+            obrasDesconhecidas.remove(at: index)
         }
     }
-    
-     mutating func rollObra() -> ArtEntity{
-        let obraAchada = obrasDesconhecidas.randomElement()
-        let obraId = obraAchada?.id
-        findObra(id: obraId ?? UUID())
-        
-        return obraAchada!
+   
+    mutating func rollObra() -> ArtEntity? {
+        guard let obraSorteada = obrasDesconhecidas.randomElement() else {
+            return nil
+        }
+        findObra(id: obraSorteada.id)
+        return obraSorteada
     }
-
-  
-    
-    
-    
 }
