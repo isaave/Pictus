@@ -87,3 +87,23 @@ final class EntityRelationship : ObservableObject{
         context.delete(album)
     }
 }
+
+ extension EntityRelationship {
+    private static let dateKeyFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        return f
+    }()
+
+    var todayKey: String {
+        Self.dateKeyFormatter.string(from: Date())
+    }
+
+    func marcarDiaComoUtilizado() {
+        UserDefaults.standard.set(todayKey, forKey: "lastRollDate")
+    }
+
+    var jaUtilizouHoje: Bool {
+        UserDefaults.standard.string(forKey: "lastRollDate") == todayKey
+    }
+}

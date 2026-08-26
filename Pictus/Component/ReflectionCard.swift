@@ -76,13 +76,13 @@ struct ReflectionCard: View {
                         Spacer()
                         Button {
                             let textoReflexao = reflection.trimmingCharacters(in: .whitespacesAndNewlines)
-                            
+
                             if !textoReflexao.isEmpty {
                                 viewModel.addReflection(text: textoReflexao, to: obraAtual)
                             }
-                            
+
                             hasDiscovered = true
-                            lastRollDate = Date().formatted(date: .numeric, time: .omitted)
+                            viewModel.marcarDiaComoUtilizado() 
                             dismiss()
                         } label: {
                             Text("Adicionar Reflexão")

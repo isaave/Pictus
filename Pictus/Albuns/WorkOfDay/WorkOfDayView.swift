@@ -16,7 +16,7 @@ struct WorkOfDay: View {
     var obras: [ArtEntity]
     
     @AppStorage("idObraDoDia") private var idObraDoDia: String = ""
-    
+    @AppStorage("lastRollDate") private var lastRollDate : Date = Date()
     private var obraSelecionada: ArtEntity? {
         if let uuid = UUID(uuidString: idObraDoDia),
            let obraDoDia = obras.first(where: { $0.id == uuid }) {
@@ -58,18 +58,18 @@ struct WorkOfDay: View {
 
 struct WorkOfDayContentView: View {
     @State private var upSheet = false
-    @State private var selectedAlbums: Set<UUID> = []
-    
-    @Environment(\.colorScheme) var colorScheme
-    @Environment(\.modelContext) private var modelContext
-    
-    var obraAtual: ArtEntity
-    @ObservedObject var viewModel: EntityRelationship
-    
-    @AppStorage("alreadyOpenedAlert") private var alreadyOpenedAlert: Bool = false
-    @State private var showAlert = false
-    
-    @Query private var reflexoesSalvas: [ReflectionEntity]
+        @State private var selectedAlbums: Set<UUID> = []
+        
+        @Environment(\.colorScheme) var colorScheme
+        @Environment(\.modelContext) private var modelContext
+        
+        var obraAtual: ArtEntity
+        @ObservedObject var viewModel: EntityRelationship
+        
+        @State private var alreadyOpenedAlert: Bool = false
+        @State private var showAlert = false
+        
+        @Query private var reflexoesSalvas: [ReflectionEntity]
     
     init(obra: ArtEntity, viewModel: EntityRelationship) {
         self.obraAtual = obra

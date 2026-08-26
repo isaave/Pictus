@@ -342,24 +342,25 @@ struct CollectionView: View {
     
     @discardableResult
     func verificarDiaDescoberta() -> Bool {
-        if jaDescobriuHoje {
+        
+        if viewModel.jaUtilizouHoje {
             exibirToast("Você já descobriu uma obra hoje, volte amanhã!")
             return false
         }
-        
         guard let novaObra = object.rollObra() else {
             exibirToast("Você já descobriu todas as obras disponíveis!")
             return false
         }
-        
+
+       
+
         context.insert(novaObra)
         idObraDoDia = novaObra.id.uuidString
-        lastRollDate = todayString 
+        viewModel.marcarDiaComoUtilizado()
+        try? context.save()
         irParaObraDoDia = true
-        
         return true
     }
-
     private func exibirToast(_ mensagem: String) {
         toastMessage = mensagem
         mostrarToast = true
