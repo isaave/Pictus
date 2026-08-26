@@ -247,6 +247,7 @@ private extension NewArtView {
         obraAtual.dateArt = dataCriacao
         obraAtual.local = local
         obraAtual.imgArt = imageData
+        obraAtual.origin = "Minhas"
             context.insert(obraAtual)
         
         

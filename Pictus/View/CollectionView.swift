@@ -329,12 +329,15 @@ struct CollectionView: View {
     @discardableResult
     func verificarDiaDescoberta() -> Bool {
         
+        let hoje = Date().formatted(date:.numeric, time: .omitted)
+        
+        
         guard let novaObra = object.rollObra() else {
             exibirToast("Você já descobriu todas as obras disponíveis!")
             return false
         }
-        if idObraDoDia.isEmpty || idObraDoDia != novaObra.id.uuidString && lastRollDate == todayString {
-            exibirToast("Você já abriu esta obra hoje, espere até amanhã!")
+        if lastRollDate == hoje {
+            exibirToast("Você já descobriu uma obra hoje, volte amanhã!")
             return false
         }
         context.insert(novaObra)
