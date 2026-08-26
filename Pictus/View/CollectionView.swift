@@ -237,6 +237,15 @@ struct CollectionView: View {
         .sheet(isPresented: $mostrarOnboarding) {
             onboardingView
         }
+        .task {
+            let granted = await NotificationManager.shared
+                .permissionRequest()
+
+            if granted {
+                NotificationManager.shared
+                    .notificationSet(jaUtilizouHoje: viewModel.jaUtilizouHoje)
+            }
+        }
     }
 
     private var onboardingView: some View {
@@ -369,3 +378,4 @@ struct CollectionView: View {
         }
     }
 }
+
