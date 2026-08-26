@@ -38,6 +38,11 @@ struct NewArtView: View {
     @State private var showImageError: Bool = false
     @State private var isFill: Bool = false
     @State private var showConfirmationAlert: Bool = false
+    
+    @State private var mostrarImagemZoom = false
+    @State private var zoomScale: CGFloat = 1
+    @State private var zoomOffset: CGSize = .zero
+    @GestureState private var pinchMagnification: CGFloat = 1
 
     init(obraAtual: ArtEntity, albumPai: AlbumEntity? = nil) {
         self.obraAtual = obraAtual
@@ -121,6 +126,64 @@ struct NewArtView: View {
                 } message: {
                     Text("Selecione outra imagem e tente novamente.")
                 }
+                .fullScreenCover(isPresented: $mostrarImagemZoom) {
+                    ZStack {
+                        Color.black.ignoresSafeArea()
+
+                        if let imagePreview {
+                            Image(uiImage: imagePreview)
+                                .resizable()
+                                .scaledToFit()
+                                .scaleEffect(zoomScale * pinchMagnification)
+                                .offset(zoomOffset)
+                                .gesture(
+                                    MagnificationGesture()
+                                        .updating($pinchMagnification) { value, state, _ in
+                                            state = value
+                                        }
+                                        .onEnded { value in
+                                            zoomScale = max(1, min(zoomScale * value, 5))
+                                        }
+                                )
+                                .simultaneousGesture(
+                                    DragGesture()
+                                        .onChanged { value in
+                                            if zoomScale > 1 { zoomOffset = value.translation }
+                                        }
+                                        .onEnded { _ in
+                                            if zoomScale <= 1 { zoomOffset = .zero }
+                                        }
+                                )
+                                .onTapGesture(count: 2) {
+                                    withAnimation(.spring()) {
+                                        if zoomScale > 1 {
+                                            zoomScale = 1
+                                            zoomOffset = .zero
+                                        } else {
+                                            zoomScale = 2.5
+                                        }
+                                    }
+                                }
+                        }
+
+                        VStack {
+                            HStack {
+                                Spacer()
+                                Button {
+                                    zoomScale = 1
+                                    zoomOffset = .zero
+                                    mostrarImagemZoom = false
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.title)
+                                        .foregroundStyle(.white, .black.opacity(0.5))
+                                }
+                                .padding()
+                            }
+                            Spacer()
+                        }
+                    }
+                }
             }
         }
     }
@@ -138,6 +201,16 @@ private extension NewArtView {
                     .frame(maxWidth: geometry.size.width)
                     .frame(height: 400)
                     .clipped()
+                    .overlay(alignment: .bottomTrailing) {
+                        Button {
+                            mostrarImagemZoom = true
+                        } label: {
+                            Image(systemName: "arrow.up.left.and.arrow.down.right")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundStyle(.white)
+                        }
+                        .padding(16)
+                    }
             } else {
                 ZStack {
                     PhotosPicker(selection: $selectedPhoto, matching: .images) {

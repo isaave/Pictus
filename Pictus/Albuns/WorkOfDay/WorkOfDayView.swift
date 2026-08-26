@@ -71,6 +71,11 @@ struct WorkOfDayContentView: View {
         
         @Query private var reflexoesSalvas: [ReflectionEntity]
     
+    @State private var mostrarImagemZoom = false
+    @State private var zoomScale: CGFloat = 1
+    @State private var zoomOffset: CGSize = .zero
+    @GestureState private var pinchMagnification: CGFloat = 1
+    
     init(obra: ArtEntity, viewModel: EntityRelationship) {
         self.obraAtual = obra
         self._viewModel = ObservedObject(wrappedValue: viewModel)
@@ -87,6 +92,10 @@ struct WorkOfDayContentView: View {
     private var isContextReleased: Bool {
         obraAtual.ctxReleased ?? false
     }
+    
+    private var uiImageAtual: UIImage {
+        UIImage(data: obraAtual.imgArt ?? Data()) ?? UIImage(systemName: "photo")!
+    }
    
     var body: some View {
         let autor = obraAtual.nameAuthor ?? "Desconhecido"
@@ -95,7 +104,7 @@ struct WorkOfDayContentView: View {
          
         ScrollView {
             VStack(spacing: 16) {
-                Image(uiImage: UIImage(data: obraAtual.imgArt ?? Data()) ?? UIImage(systemName: "photo")!)
+                Image(uiImage: uiImageAtual)
                     .resizable()
                     .scaledToFit()
                     .overlay {
@@ -116,6 +125,16 @@ struct WorkOfDayContentView: View {
                                 .font(.title.bold())
                             Text("\(autor) - \(local) - \(ano)")
                                 .font(.body)
+                                .foregroundStyle(.white)
+                        }
+                        .padding(16)
+                    }
+                    .overlay(alignment: .bottomTrailing) {
+                        Button {
+                            mostrarImagemZoom = true
+                        } label: {
+                            Image(systemName: "arrow.up.left.and.arrow.down.right")
+                                .font(.system(size: 18, weight: .semibold))
                                 .foregroundStyle(.white)
                         }
                         .padding(16)
@@ -264,6 +283,62 @@ struct WorkOfDayContentView: View {
                                     upSheet = false
                                 }
                             )
+                        }
+                    }
+                }
+                .fullScreenCover(isPresented: $mostrarImagemZoom) {
+                    ZStack {
+                        Color.black.ignoresSafeArea()
+
+                        Image(uiImage: uiImageAtual)
+                            .resizable()
+                            .scaledToFit()
+                            .scaleEffect(zoomScale * pinchMagnification)
+                            .offset(zoomOffset)
+                            .gesture(
+                                MagnificationGesture()
+                                    .updating($pinchMagnification) { value, state, _ in
+                                        state = value
+                                    }
+                                    .onEnded { value in
+                                        zoomScale = max(1, min(zoomScale * value, 5))
+                                    }
+                            )
+                            .simultaneousGesture(
+                                DragGesture()
+                                    .onChanged { value in
+                                        if zoomScale > 1 { zoomOffset = value.translation }
+                                    }
+                                    .onEnded { _ in
+                                        if zoomScale <= 1 { zoomOffset = .zero }
+                                    }
+                            )
+                            .onTapGesture(count: 2) {
+                                withAnimation(.spring()) {
+                                    if zoomScale > 1 {
+                                        zoomScale = 1
+                                        zoomOffset = .zero
+                                    } else {
+                                        zoomScale = 2.5
+                                    }
+                                }
+                            }
+
+                        VStack {
+                            HStack {
+                                Spacer()
+                                Button {
+                                    zoomScale = 1
+                                    zoomOffset = .zero
+                                    mostrarImagemZoom = false
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.title)
+                                        .foregroundStyle(.white, .black.opacity(0.5))
+                                }
+                                .padding()
+                            }
+                            Spacer()
                         }
                     }
                 }
