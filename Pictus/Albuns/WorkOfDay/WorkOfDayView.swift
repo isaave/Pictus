@@ -54,6 +54,8 @@ struct WorkOfDay: View {
 }
 
 struct WorkOfDayContentView: View {
+    @State private var upSheet = false
+    @State private var selectedAlbums: Set<UUID> = []
     
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.modelContext) private var modelContext
@@ -228,6 +230,25 @@ struct WorkOfDayContentView: View {
                 }
             }
         }
+        .interactiveDismissDisabled()
+                .toolbar {
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            upSheet.toggle()
+                        } label: {
+                            Image(systemName: "folder.fill.badge.plus")
+                                .fontWeight(.semibold)
+                        }
+                        .sheet(isPresented: $upSheet) {
+                            AlbumSelector(
+                               selectedAlbums: $selectedAlbums, onConfirm: {
+                                    upSheet = false
+                                }
+                                
+                            )
+                        }
+                    }
+                }
     }
      
     private func alternarLiberacaoContexto() {

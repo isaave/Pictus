@@ -6,67 +6,104 @@
 //
 
 import SwiftUI
+import CoreData
 internal import SwiftData
 
 struct AddAlbumView: View {
-    @Environment(\.modelContext) private var modelContext
-    @EnvironmentObject var viewModel: EntityRelationship
+    @EnvironmentObject var Vm: EntityRelationship
+    @Environment(\.dismiss) var dismiss
+    @Environment(\.modelContext) private var context
 
-    @Query(sort: [SortDescriptor(\AlbumEntity.nameAlbum)])
-    private var albunsEntities: [AlbumEntity]
+
+   
+    @Query(sort: \ArtEntity.dateArt, order: .reverse)
+    var obrasEntities: [ArtEntity]
+
+    @State private var nomeAlbum: String = ""
+    @State private var obrasSelecionadas: [ArtEntity] = []
+
+    let columns = [
+        GridItem(.flexible(), spacing: 12),
+        GridItem(.flexible(), spacing: 12)
+    ]
 
     var body: some View {
-        Group {
-            if albunsEntities.isEmpty {
-                VStack(spacing: 8) {
-                    Image(systemName: "folder")
-                        .font(.system(size: 32))
-                        .foregroundStyle(.secondary)
-                    Text("Nenhum álbum criado ainda")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 20)
-            } else {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    LazyHStack(spacing: 10) {
-                        ForEach(albunsEntities, id: \.idAlbum) { album in
-                            if let idAlbum = album.idAlbum {
-                                NavigationLink {
-                                    AlbunsView(idAlbum: idAlbum)
-                                        .environmentObject(viewModel)
-                                } label: {
-                                    albumCard(album)
-                                }
-                                .buttonStyle(.plain)
+        NavigationStack {
+            Group {
+                if obrasEntities.isEmpty {
+                    ContentUnavailableView(
+                        "Nenhuma obra encontrada",
+                        systemImage: "paintbrush",
+                        description: Text("Crie uma obra antes de montar um álbum.")
+                    )
+                } else {
+                    ScrollView {
+                        VStack(spacing: 16) {
+                            Text("Escolha o nome do álbum abaixo")
+                                .font(Font.body.bold())
+                                .padding(.horizontal)
+                                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                            
+                            TextField("EX: renascentista", text: $nomeAlbum)
+                                .textFieldStyle(.roundedBorder)
+                                .padding(.horizontal)
+
+                            HStack {
+                                Text("Selecione as obras")
+                                    .font(.system(size: 18, weight: .bold))
+                                Spacer()
                             }
+                            .padding(.horizontal)
+
+                            LazyVGrid(columns: columns, spacing: 12) {
+                                ForEach(obrasEntities, id:\.id) { obra in
+                                    obraSelectionCard(obra)
+                                }
+                            }
+                            .padding(.horizontal)
                         }
+                        .padding(.vertical)
                     }
-                    .padding(.horizontal, 15)
+                }
+            }
+            .navigationTitle("Novo Álbum")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancelar") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Salvar") {
+                        let albumTemp = AlbumEntity(nameAlbum: nomeAlbum, imgAlbum: obrasSelecionadas.first?.imgArt, art: obrasSelecionadas)
+                        context.insert(albumTemp)
+                        dismiss()
+                    }
+                    .disabled(nomeAlbum.isEmpty || obrasSelecionadas.isEmpty)
                 }
             }
         }
     }
 
     @ViewBuilder
-    private func albumCard(_ album: AlbumEntity) -> some View {
-        ZStack(alignment: .center) {
-            if let imgData = album.imgAlbum, let uiImage = UIImage(data: imgData) {
+    private func obraSelectionCard(_ obra: ArtEntity) -> some View {
+        let isSelected = obrasSelecionadas.contains(where: { $0.id == obra.id })
+
+        ZStack(alignment: .bottomLeading) {
+            if let imgData = obra.imgArt, let uiImage = UIImage(data: imgData) {
                 Image(uiImage: uiImage)
                     .resizable()
-                    .scaledToFill()
                     .aspectRatio(1, contentMode: .fill)
             } else {
                 Rectangle()
                     .fill(Color.gray.opacity(0.2))
+                    .aspectRatio(1, contentMode: .fit)
                     .overlay {
                         Image(systemName: "photo")
                             .foregroundStyle(.secondary)
                     }
             }
 
-            Text(album.nameAlbum ?? "Sem nome")
+            Text(obra.nameArt ?? "Sem título")
                 .font(.caption)
                 .fontWeight(.semibold)
                 .foregroundStyle(.white)
@@ -75,17 +112,43 @@ struct AddAlbumView: View {
                 .background(
                     LinearGradient(colors: [.clear, .black.opacity(0.6)], startPoint: .top, endPoint: .bottom)
                 )
+
+            if isSelected {
+                Image(systemName: "checkmark.circle.fill")
+                    .font(.title2)
+                    .foregroundStyle(.white, .blue)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topTrailing)
+                    .padding(6)
+            }
         }
-        .frame(width: 130, height: 155)
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .strokeBorder(.blue, lineWidth: isSelected ? 3 : 0)
+        )
+        .onTapGesture {
+            if isSelected {
+                obrasSelecionadas.removeAll { $0.id == obra.id }
+            } else {
+                obrasSelecionadas.append(obra)
+            }
+        }
     }
 }
 
-#Preview {
-    let config = ModelConfiguration(isStoredInMemoryOnly: true)
-    let container = try! ModelContainer(for: AlbumEntity.self, ArtEntity.self, configurations: config)
-
-    return AddAlbumView()
-        .environmentObject(EntityRelationship(context: container.mainContext))
-        .modelContainer(container)
-}
+//#Preview("Com obras disponíveis") {
+//    let vm = CoreDataRelationshipViewModel()
+//    vm.seedObrasIfNeeded()
+//    return NavigationStack {
+//        AddAlbumView()
+//            .environmentObject(vm)
+//    }
+//}
+//
+//#Preview("Sem obras") {
+//    let vm = CoreDataRelationshipViewModel()
+//    return NavigationStack {
+//        AddAlbumView()
+//            .environmentObject(vm)
+//    }
+//}

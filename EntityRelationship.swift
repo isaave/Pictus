@@ -84,17 +84,17 @@ final class EntityRelationship : ObservableObject{
     }
     
     // Álbuns
-    func createAlbum(name: String, artworks: [ArtEntity]) {
-        let album = AlbumEntity()
-        album.idAlbum = UUID()
-        album.nameAlbum = name
-        album.imgAlbum = artworks.first?.imgArt
-        album.art = []  
-        context.insert(album)
-        for artwork in artworks {
-            album.art?.append(artwork)
-        }
-    }
+//    func createAlbum(name: String, artworks: [ArtEntity]) {
+//        let album = AlbumEntity()
+//        album.idAlbum = UUID()
+//        album.nameAlbum = name
+//        album.imgAlbum = artworks.first?.imgArt
+//        album.art = []  
+//        context.insert(album)
+//        for artwork in artworks {
+//            album.art?.append(artwork)
+//        }
+//    }
     
     func deleteAlbum(_ album: AlbumEntity) {
         context.delete(album)

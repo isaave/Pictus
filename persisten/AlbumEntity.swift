@@ -5,20 +5,20 @@
 //  Created by Andre on 24/08/26.
 //
 //
-
 internal import Foundation
-public import SwiftData
+internal import SwiftData
 
-
-@Model public class AlbumEntity {
+@Model
+class AlbumEntity {
     var idAlbum: UUID?
     var imgAlbum: Data?
     var nameAlbum: String?
     @Relationship(inverse: \ArtEntity.albuns) var art: [ArtEntity]?
     
-    public init() {
-        idAlbum = UUID()
-       
+    init(nameAlbum: String?, imgAlbum: Data?,art: [ArtEntity]?) {
+        self.idAlbum = UUID()
+        self.nameAlbum = nameAlbum
+        self.imgAlbum = imgAlbum
+        self.art = art
     }
-    
 }
