@@ -273,3 +273,4 @@ struct WorkOfDayContentView: View {
         obraAtual.ctxReleased = !isContextReleased
     }
 }
+

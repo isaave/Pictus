@@ -23,6 +23,8 @@ struct AlbunsView: View {
     @State var searchText = ""
     @State private var obraAtual: ArtEntity? = nil
     
+    @State var Upsheet = false
+    
     var albumAtual: AlbumEntity? {
         return albunsEntities.first { $0.idAlbum == idAlbum }
     }
@@ -72,6 +74,21 @@ struct AlbunsView: View {
                     tratarCriacaoObraManual()
                 }, icon: "plus")
                 .frame(width: 48, height: 48)
+                
+                Button {
+                    Upsheet.toggle()
+                }label: {
+                    Image(systemName: "photo.badge.plus.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.primary)
+                        .frame(width: 48, height: 48)
+                        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 55, style: .continuous))
+
+                }
+                .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 5)
+                .buttonStyle(.plain)
+                
+                
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
@@ -125,6 +142,10 @@ struct AlbunsView: View {
         .toolbar(.hidden, for: .navigationBar)
         .sheet(item: $obraAtual) { obra in
             NewArtView(obraAtual: obra, albumPai: albumAtual)
+        }
+        .sheet(isPresented: $Upsheet){
+            ArtSelector(album: albumAtual)
+            
         }
     }
     
