@@ -1,5 +1,5 @@
 //
-//  ArtRelationship.swift
+//  EntityRelationship.swift
 //  Pictus
 //
 //  Created by Andre on 25/08/26.
@@ -89,6 +89,7 @@ final class EntityRelationship : ObservableObject{
         album.idAlbum = UUID()
         album.nameAlbum = name
         album.imgAlbum = artworks.first?.imgArt
+        album.art = []  
         context.insert(album)
         for artwork in artworks {
             album.art?.append(artwork)

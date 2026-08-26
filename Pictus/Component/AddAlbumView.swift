@@ -1,5 +1,5 @@
 //
-//  AlbumHorizontalView.swift
+//  AddAlbumView.swift
 //  Pictus
 //
 //  Created by Pedro Monge Silveira on 22/08/26.
@@ -11,10 +11,10 @@ internal import SwiftData
 struct AddAlbumView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var viewModel: EntityRelationship
-    
+
     @Query(sort: [SortDescriptor(\AlbumEntity.nameAlbum)])
     private var albunsEntities: [AlbumEntity]
-    
+
     var body: some View {
         Group {
             if albunsEntities.isEmpty {
@@ -32,14 +32,16 @@ struct AddAlbumView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 10) {
                         ForEach(albunsEntities, id: \.idAlbum) { album in
-                                                        NavigationLink {
-                                                            AlbunsView(idAlbum: album.idAlbum!,obraAtual: ArtEntity())
-                                                                .environmentObject(viewModel)
-                                                        } label: {
-                                                            albumCard(album)
-                                                        }
-                                                        .buttonStyle(.plain)
-                                                    }
+                            if let idAlbum = album.idAlbum {
+                                NavigationLink {
+                                    AlbunsView(idAlbum: idAlbum)
+                                        .environmentObject(viewModel)
+                                } label: {
+                                    albumCard(album)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
                     }
                     .padding(.horizontal, 15)
                 }
@@ -82,7 +84,7 @@ struct AddAlbumView: View {
 #Preview {
     let config = ModelConfiguration(isStoredInMemoryOnly: true)
     let container = try! ModelContainer(for: AlbumEntity.self, ArtEntity.self, configurations: config)
-    
+
     return AddAlbumView()
         .environmentObject(EntityRelationship(context: container.mainContext))
         .modelContainer(container)

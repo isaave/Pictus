@@ -11,7 +11,7 @@ internal import SwiftData
 struct AlbumHorizontalView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject var viewModel: EntityRelationship
-    
+
     @Query(sort: [SortDescriptor(\AlbumEntity.nameAlbum)])
     private var albunsEntities: [AlbumEntity]
 
@@ -32,9 +32,9 @@ struct AlbumHorizontalView: View {
                 ScrollView(.horizontal, showsIndicators: false) {
                     LazyHStack(spacing: 10) {
                         ForEach(albunsEntities, id: \.idAlbum) { album in
-                            
+                            if let idAlbum = album.idAlbum {
                                 NavigationLink {
-                                    AlbunsView(idAlbum: album.idAlbum!,obraAtual: ArtEntity())
+                                    AlbunsView(idAlbum: idAlbum)
                                         .environmentObject(viewModel)
                                 } label: {
                                     albumCard(album)
@@ -47,7 +47,7 @@ struct AlbumHorizontalView: View {
                 }
             }
         }
-    
+    }
 
     @ViewBuilder
     private func albumCard(_ album: AlbumEntity) -> some View {
@@ -80,5 +80,3 @@ struct AlbumHorizontalView: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 }
-
-

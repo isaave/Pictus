@@ -21,7 +21,7 @@ struct AlbunsView: View {
     let columns = [GridItem(.flexible()), GridItem(.flexible())]
     
     @State var searchText = ""
-    @State var obraAtual : ArtEntity
+    @State private var obraAtual: ArtEntity? = nil
     
     var albumAtual: AlbumEntity? {
         return albunsEntities.first { $0.idAlbum == idAlbum }
@@ -117,13 +117,8 @@ struct AlbunsView: View {
         }
         // CORREÇÃO 4: Atualização de modificador depreciado
         .toolbar(.hidden, for: .navigationBar)
-        .sheet(isPresented: Binding(
-            get: { obraAtual != nil },
-            set: { seAberto in
-                if !seAberto { obraAtual = ArtEntity() }
-            }
-        )) {
-         NewArtView(obraAtual: obraAtual)
+        .sheet(item: $obraAtual) { obra in
+            NewArtView(obraAtual: obra)
         }
     }
     

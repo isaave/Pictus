@@ -11,17 +11,17 @@ internal import SwiftData
 struct AllAlbunsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
-    
+
     @State private var searchText = ""
     @State private var mostrarAddAlbum = false
-    
+
     @Query var albunsEntities: [AlbumEntity]
-    
+
     let columns = [
         GridItem(.flexible()),
         GridItem(.flexible())
     ]
-    
+
     var filteredAlbuns: [AlbumEntity] {
         if searchText.isEmpty {
             return albunsEntities
@@ -32,10 +32,10 @@ struct AllAlbunsView: View {
             }
         }
     }
-    
+
     var body: some View {
         VStack(spacing: 0) {
-            
+
             HStack {
                 Button {
                     dismiss()
@@ -59,15 +59,15 @@ struct AllAlbunsView: View {
                     y: 5
                 )
                 .buttonStyle(.plain)
-                
+
                 Spacer()
-                
+
                 Text("Álbuns")
                     .font(.system(size: 20, weight: .bold))
                     .foregroundColor(.primary)
-                
+
                 Spacer()
-                
+
                 BtnAdd(
                     ButtonAction: {
                         mostrarAddAlbum = true
@@ -78,38 +78,37 @@ struct AllAlbunsView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
-            
+
             ScrollView {
                 if filteredAlbuns.isEmpty {
                     VStack(spacing: 12) {
                         Image(systemName: "rectangle.stack")
                             .font(.system(size: 40))
                             .foregroundStyle(.secondary)
-                        
+
                         Text("Nenhum álbum encontrado")
                             .font(.headline)
-                        
+
                         Text("Você ainda não possui álbuns.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.top, 60)
-                    
+
                 } else {
                     LazyVGrid(
                         columns: columns,
                         spacing: 16
                     ) {
                         ForEach(filteredAlbuns, id: \.idAlbum) { album in
-                            if let idAlbum = album.idAlbum{
-                                
+                            if let idAlbum = album.idAlbum {
                                 NavigationLink {
-                                    AlbunsView(idAlbum: album.idAlbum ?? UUID(), obraAtual: ArtEntity())
+                                    AlbunsView(idAlbum: idAlbum)
                                 } label: {
                                     let obrasDoAlbum = album.art ?? []
                                     let primeiraImagemValida = obrasDoAlbum.compactMap { $0.imgArt }.first
-                                    
+
                                     AlbumCover(
                                         albumName: album.nameAlbum ?? "Sem nome",
                                         coverData: primeiraImagemValida,
