@@ -96,7 +96,9 @@ struct AddAlbumView: View {
             if let imgData = obra.imgArt, let uiImage = UIImage(data: imgData) {
                 Image(uiImage: uiImage)
                     .resizable()
-                    .aspectRatio(1, contentMode: .fill)
+                    .scaledToFill()
+                    .frame(width: 180, height: 250)
+               
             } else {
                 Rectangle()
                     .fill(Color.gray.opacity(0.2))
