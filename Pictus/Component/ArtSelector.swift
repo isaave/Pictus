@@ -74,6 +74,8 @@ struct ArtSelector: View {
             if let imgData = obra.imgArt, let uiImage = UIImage(data: imgData) {
                 Image(uiImage: uiImage)
                     .resizable()
+                    .scaledToFill()
+                    .frame(width: 150, height: 250)
                     .aspectRatio(1, contentMode: .fill)
             } else {
                 Rectangle()

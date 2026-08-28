@@ -367,7 +367,6 @@ private extension NewArtView {
             }
             
             for album in albunsSelecionados {
-                album.art = []
                 if !(album.art.contains(where: { $0.id == obraAtual.id })) {
                     album.art.append(obraAtual)
                 }

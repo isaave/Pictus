@@ -53,7 +53,52 @@ struct ObrasObjects{
             ctxArt: "O Quase Toque: O espaço pequeno entre o dedo de Deus e o dedo de Adão mostra o momento antes da centelha da vida passar para o homem.Posturas: Deus surge em movimento, cercado por anjos. Adão fica deitado de forma relaxada, esperando a energia vital.Forma do Manto: O tecido vermelho ao redor de Deus tem o formato parecido com um cérebro humano, o que simboliza a mente e a razão divina",
             ctxReleased: false,
             origin: "Descobertas"
-        )
+        ),
+        
+        ArtEntity(
+                    name: "A Noite Estrelada",
+                    authorName: "Vincent van Gogh",
+                    date: Calendar.current.date(from: DateComponents(year: 1889, month: 6, day: 18)),
+                    local: "França",
+                    img: UIImage(named: "Image 4")?.jpegData(compressionQuality: 0.1),
+                    ctxArt: "Movimento e Emoção: As pinceladas espessas e circulares no céu expressam a turbulência emocional do artista, que pintou a obra enquanto estava no asilo de Saint-Paul-de-Mausole. O Cipreste: A árvore escura no primeiro plano simboliza a morte e a eternidade, agindo como uma ponte entre a terra e o céu. Contraste de Cores: O amarelo vibrante das estrelas e da lua contrasta fortemente com os tons profundos de azul do céu noturno e da vila adormecida abaixo.",
+                    ctxReleased: false,
+                    origin: "Descobertas"
+                ),
+                
+                ArtEntity(
+                    name: "Abaporu",
+                    authorName: "Tarsila do Amaral",
+                    date: Calendar.current.date(from: DateComponents(year: 1928, month: 1, day: 11)),
+                    local: "Brasil",
+                    img: UIImage(named: "Image 5")?.jpegData(compressionQuality: 0.1),
+                    ctxArt: "Símbolo Antropofágico: O nome vem do tupi e significa 'homem que come gente'. A pintura inspirou o Movimento Antropofágico, que propunha absorver a cultura europeia e transformá-la em algo puramente brasileiro. Proporções Exageradas: A figura solitária possui pés e mãos enormes, simbolizando a ligação com a terra, enquanto a cabeça pequena representa a desvalorização do trabalho intelectual na época. Elementos Nacionais: O cacto e o sol compõem uma paisagem usando as cores da bandeira nacional.",
+                    ctxReleased: false,
+                    origin: "Descobertas"
+                ),
+                
+                ArtEntity(
+                    name: "O Beijo",
+                    authorName: "Gustav Klimt",
+                    date: Calendar.current.date(from: DateComponents(year: 1908, month: 10, day: 10)),
+                    local: "Áustria",
+                    img: UIImage(named: "Image 6")?.jpegData(compressionQuality: 0.1),
+                    ctxArt: "Fase Dourada: A obra é o ponto alto da Fase Dourada de Klimt, onde ele utilizou folhas de ouro misturadas à tinta a óleo para criar um efeito radiante e sagrado em torno dos amantes. Fusão dos Corpos: O casal parece se fundir em uma única forma, envolto por mantos com padrões geométricos que diferenciam os sexos (retângulos para ele, círculos e flores para ela). Abstração e Realismo: Enquanto os rostos são pintados de forma realista, o restante da composição dissolve-se em abstração.",
+                    ctxReleased: false,
+                    origin: "Descobertas"
+                ),
+                
+                
+                ArtEntity(
+                    name: "A Moça com o Brinco de Pérola",
+                    authorName: "Johannes Vermeer",
+                    date: Calendar.current.date(from: DateComponents(year: 1665, month: 10, day: 10)),
+                    local: "Holanda",
+                    img: UIImage(named: "Image 7")?.jpegData(compressionQuality: 0.1),
+                    ctxArt: "O Foco na Luz: Vermeer era um mestre da iluminação. A luz incide suavemente no rosto da jovem e destaca brilhantemente o brinco de pérola, que é o ponto focal da tela. O Olhar Enigmático: A garota é capturada em um momento fugaz, olhando por cima do ombro com os lábios levemente entreabertos, o que confere uma intimidade imediata à obra. Fundo Escuro: Diferente de muitos retratos da época, o fundo é totalmente escuro e vazio, o que aumenta o contraste e dá uma sensação de tridimensionalidade à figura.",
+                    ctxReleased: false,
+                    origin: "Descobertas"
+                )
     ]
     
     var obrasConhecidas: [ArtEntity] = [

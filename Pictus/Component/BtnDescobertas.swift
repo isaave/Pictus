@@ -1,8 +1,12 @@
 import SwiftUI
 
 struct BtnDescobertas: View {
-    @AppStorage("hasDiscovered") private var hasDiscovered: Bool = false
-    var action: () -> Void 
+    @EnvironmentObject var viewModel: EntityRelationship
+//    @AppStorage("hasDiscovered") private var hasDiscovered: Bool = false
+    var hasDiscovered: Bool {
+        viewModel.jaUtilizouHoje
+    }
+    var action: () -> Void
 
     var body: some View {
         Button(action: action) {
