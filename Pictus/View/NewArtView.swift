@@ -139,68 +139,68 @@ struct NewArtView: View {
                     Text("Selecione outra imagem e tente novamente.")
                 }
                 .fullScreenCover(isPresented: $mostrarImagemZoom) {
-                                   ZStack {
-                                       Color.black.ignoresSafeArea()
+                    ZStack {
+                        Color.black.ignoresSafeArea()
 
-                                       if let imagePreview {
-                                           Image(uiImage: imagePreview)
-                                               .resizable()
-                                               .scaledToFit()
-                                               .scaleEffect(zoomScale * pinchMagnification)
-                                               .offset(zoomOffset)
-                                               .gesture(
-                                                   MagnificationGesture()
-                                                       .updating($pinchMagnification) { value, state, _ in
-                                                           state = value
-                                                       }
-                                                       .onEnded { value in
-                                                           zoomScale = max(1, min(zoomScale * value, 5))
-                                                       }
-                                               )
-                                               .simultaneousGesture(
-                                                   DragGesture()
-                                                       .onChanged { value in
-                                                           if zoomScale > 1 { zoomOffset = value.translation }
-                                                       }
-                                                       .onEnded { _ in
-                                                           if zoomScale <= 1 { zoomOffset = .zero }
-                                                       }
-                                               )
-                                               .onTapGesture(count: 2) {
-                                                   withAnimation(.spring()) {
-                                                       if zoomScale > 1 {
-                                                           zoomScale = 1
-                                                           zoomOffset = .zero
-                                                       } else {
-                                                           zoomScale = 2.5
-                                                       }
-                                                   }
-                                               }
-                                       }
+                        if let imagePreview {
+                            Image(uiImage: imagePreview)
+                                .resizable()
+                                .scaledToFit()
+                                .scaleEffect(zoomScale * pinchMagnification)
+                                .offset(zoomOffset)
+                                .gesture(
+                                    MagnificationGesture()
+                                        .updating($pinchMagnification) { value, state, _ in
+                                            state = value
+                                        }
+                                        .onEnded { value in
+                                            zoomScale = max(1, min(zoomScale * value, 5))
+                                        }
+                                )
+                                .simultaneousGesture(
+                                    DragGesture()
+                                        .onChanged { value in
+                                            if zoomScale > 1 { zoomOffset = value.translation }
+                                        }
+                                        .onEnded { _ in
+                                            if zoomScale <= 1 { zoomOffset = .zero }
+                                        }
+                                )
+                                .onTapGesture(count: 2) {
+                                    withAnimation(.spring()) {
+                                        if zoomScale > 1 {
+                                            zoomScale = 1
+                                            zoomOffset = .zero
+                                        } else {
+                                            zoomScale = 2.5
+                                        }
+                                    }
+                                }
+                        }
 
-                                       VStack {
-                                           HStack {
-                                               Spacer()
-                                               Button {
-                                                   zoomScale = 1
-                                                   zoomOffset = .zero
-                                                   mostrarImagemZoom = false
-                                               } label: {
-                                                   Image(systemName: "xmark.circle.fill")
-                                                       .font(.title)
-                                                       .foregroundStyle(.white, .black.opacity(0.5))
-                                               }
-                                               .padding()
-                                           }
-                                           Spacer()
-                                       }
-                                   }
-                               }
-                           }
-                       }
-                   }
+                        VStack {
+                            HStack {
+                                Spacer()
+                                Button {
+                                    zoomScale = 1
+                                    zoomOffset = .zero
+                                    mostrarImagemZoom = false
+                                } label: {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .font(.title)
+                                        .foregroundStyle(.white, .black.opacity(0.5))
+                                }
+                                .padding()
+                            }
+                            Spacer()
+                        }
+                    }
+                }
             }
-// MARK: - View Builders e UI Auxiliar
+        }
+    }
+}
+
 private extension NewArtView {
     
     @ViewBuilder
@@ -214,15 +214,15 @@ private extension NewArtView {
                     .frame(height: 400)
                     .clipped()
                     .overlay(alignment: .bottomTrailing) {
-                                            Button {
-                                                mostrarImagemZoom = true
-                                            } label: {
-                                                Image(systemName: "arrow.up.left.and.arrow.down.right")
-                                                    .font(.system(size: 18, weight: .semibold))
-                                                    .foregroundStyle(.white)
-                                            }
-                                            .padding(16)
-                                        }
+                        Button {
+                            mostrarImagemZoom = true
+                        } label: {
+                            Image(systemName: "arrow.up.left.and.arrow.down.right")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundStyle(.white)
+                        }
+                        .padding(16)
+                    }
             } else {
                 ZStack {
                     PhotosPicker(selection: $selectedPhoto, matching: .images) {
@@ -337,11 +337,11 @@ private extension NewArtView {
             }
         }
         
+        // Se a obra foi criada apenas na memória (!isEditing), inserimos no banco agora:
         if !isEditing {
             context.insert(obraAtual)
         }
         
-        // 3. Usa o texto preenchido na view principal (Binding passado do ReflectionCard)
         let textoFinalReflexao = reflectionText.trimmingCharacters(in: .whitespacesAndNewlines)
         if !textoFinalReflexao.isEmpty {
             viewModel.addReflection(text: textoFinalReflexao, to: obraAtual)
@@ -353,9 +353,15 @@ private extension NewArtView {
     }
     
     func discart() {
-        if !isEditing {
-            context.delete(obraAtual)
+        if isEditing {
+            let nomeVazio = (obraAtual.nameArt ?? "").trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            if nomeVazio {
+                context.delete(obraAtual)
+                try? context.save()
+            }
         }
+      
+        
         dismiss()
     }
     
@@ -396,5 +402,3 @@ private extension NewArtView {
         }
     }
 }
-
-

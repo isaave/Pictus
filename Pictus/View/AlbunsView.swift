@@ -28,7 +28,7 @@ struct AlbunsView: View {
     }
     
     var obrasDoAlbum: [ArtEntity] {
-       
+        
         return albumAtual?.art ?? []
     }
     
@@ -73,19 +73,19 @@ struct AlbunsView: View {
                 }, icon: "plus")
                 .frame(width: 48, height: 48)
                 Button {
-                        Upsheet.toggle()
-                             }label: {
-                                 Image(systemName: "photo.badge.plus.fill")
-                                     .font(.system(size: 20))
-                                     .foregroundColor(.primary)
-                                     .frame(width: 48, height: 48)
-                                     .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 55, style: .continuous))
-
-                             }
-                             .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 5)
-                             .buttonStyle(.plain)
-                             
-                             
+                    Upsheet.toggle()
+                }label: {
+                    Image(systemName: "photo.badge.plus.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(.primary)
+                        .frame(width: 48, height: 48)
+                        .glassEffect(.regular.interactive(), in: .rect(cornerRadius: 55, style: .continuous))
+                    
+                }
+                .shadow(color: .black.opacity(0.08), radius: 10, x: 0, y: 5)
+                .buttonStyle(.plain)
+                
+                
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 8)
@@ -120,8 +120,8 @@ struct AlbunsView: View {
                                 .contextMenu{
                                     Button(role:.destructive){
                                         if let albumAtual = albumAtual {
-                                                            removerObraDoAlbum(obra, do: albumAtual)
-                                                        }
+                                            removerObraDoAlbum(obra, do: albumAtual)
+                                        }
                                     } label: {
                                         Label("Apagar Obra",systemImage:"trash")
                                     }
@@ -141,23 +141,29 @@ struct AlbunsView: View {
             NewArtView(obraAtual: obra, albumPai: albumAtual,viewModel: viewModel)
         }
         .sheet(isPresented: $Upsheet){
-                    ArtSelector(album: albumAtual)
-                    
-                }
+            ArtSelector(album: albumAtual)
+            
+        }
     }
     
     private func removerObraDoAlbum(_ obra: ArtEntity, do album: AlbumEntity) {
         album.art.removeAll { $0.id == obra.id }
-                try? context.save()
+        try? context.save()
     }
-    
+
     private func tratarCriacaoObraManual() {
-        let idArteVazia = EntityRelationship(context: context).addEmptyArt(in: context)
-         
-        let descriptor = FetchDescriptor<ArtEntity>(predicate: #Predicate { $0.id == idArteVazia })
-         
-        if let novaObra = try? context.fetch(descriptor).first {
-            self.obraAtual = novaObra
-        }
+      
+        let novaObra = ArtEntity(
+            name: "",
+            authorName: "",
+            date:Date(),
+            local: "",
+            img: Data(),
+            ctxArt: "",
+            ctxReleased: false,
+            origin: ""
+        )
+        
+        self.obraAtual = novaObra
     }
 }

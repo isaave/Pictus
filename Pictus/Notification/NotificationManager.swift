@@ -10,6 +10,7 @@ import SwiftUI
 
 final class NotificationManager {
     static let shared = NotificationManager()
+    @EnvironmentObject var viewModel: EntityRelationship
 
     private init() {}
 
@@ -32,8 +33,9 @@ final class NotificationManager {
         body: String,
         jaUtilizouHoje: Bool
     ) {
-        guard jaUtilizouHoje == false else { return }
-
+        var jaUtilizouHoje: Bool {
+            viewModel.jaUtilizouHoje
+        }
         let now = Date()
         guard let triggerDate = Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: now) else {
             return
